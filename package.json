@@ -1,0 +1,23 @@
+{
+  "name": "builder",
+  "version": "1.0.0",
+  "description": "Drag and drop builder",
+  "scripts": {
+    "start": "npx live-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Temder/Builder.git"
+  },
+  "keywords": [
+    "builder",
+    "html",
+    "web"
+  ],
+  "author": "Temder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Temder/Builder/issues"
+  },
+  "homepage": "https://github.com/Temder/Builder#readme"
+}
