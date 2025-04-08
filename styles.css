@@ -1,0 +1,489 @@
+/* #region Main */
+* {
+    box-sizing: border-box;
+    --padding: initial;
+    --margin: initial;
+    --width: initial;
+    --height: initial;
+}
+body {
+    font-family: sans-serif;
+    font-size: 16px;
+    margin: 0;
+    padding: 0.05px;
+    padding: 1em;
+}
+#elementsContainer {
+    gap: 1em;
+}
+#structureContainer,
+#previewContainer {
+    --height: 20em;
+    --padding: 0.5em;
+    position: relative;
+    height: var(--height);
+    padding: var(--padding);
+    margin: var(--margin);
+    border: solid 1px #808080;
+    border-radius: 0.5em;
+    margin-top: 2.5em !important;
+    padding: 0.5em;
+    flex-wrap: wrap;
+}
+#structureContainer:before {
+    position: absolute;
+    left: 0;
+    top: -2em;
+    content: 'Structure Builder';
+    padding: 0.25em;
+    pointer-events: none;
+}
+#previewContainer:before {
+    position: absolute;
+    left: 0;
+    top: -2em;
+    content: 'Preview';
+    padding: 0.25em;
+}
+#structureContainer,
+#structureContainer *:not(.nothing) {
+    position: relative;
+    background-color: initial;
+    box-shadow: inset 0 0 0 var(--padding, 0) #90ee90bf, 0 0 0 var(--margin, 0) #ee9090bf;
+}
+#structureContainer:after,
+#structureContainer *:not(.nothing):after {
+    --m: var(--margin, 0.01px);
+    position: absolute;
+    content: '';
+    left: calc(var(--m) * -1);
+    top: calc(var(--m) * -1);
+    width: calc(100% + var(--m) * 2);
+    height: calc(100% + var(--m) * 2);
+    border-radius: inherit;
+    pointer-events: none;
+}
+#structureContainer:hover:not(:has(:hover)):after,
+#structureContainer *:not(.nothing):hover:not(:has(:hover)):after {
+    background-color: #00000030;
+}
+#structureContainer:hover *:not(.nothing),
+#structureContainer *:hover *:not(.nothing) {
+    background-color: white;
+    z-index: 1;
+}
+#structureContainer .layout-grid:has(.field) .structure-item {
+    display: none;
+}
+#elementsContainer .container,
+#structureContainer .container {
+    outline: solid 1px #808080;
+}
+#structureContainer .spacing,
+#previewContainer .spacing {
+    --spacing-color: rgb(56, 153, 0);
+    position: relative;
+    flex-grow: 100;
+}
+.editing {
+    outline: solid 2px #b60bff !important;
+    z-index: 99;
+}
+.field {
+    display: block;
+    width: auto;
+    max-width: 50%;
+    max-height: 50%;
+    outline: solid 2px #ffe6b6;
+    pointer-events: none;
+    z-index: 100;
+    align-self: center;
+    margin: auto;
+}
+.layout-vertical > .field {
+    min-width: 3em;
+}
+.layout-horizontal > .field {
+    min-width: 0;
+    height: auto;
+    min-height: 3em;
+}
+.flex  {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1em;
+}
+.header-item {
+    padding: 0.25em;
+    margin: 0.25em;
+    border-radius: 0.5em;
+    background-color: #cacaca;
+    cursor: grab;
+    user-select: none;
+}
+.header-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+.nothing {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    text-align: center;
+    align-content: center;
+    pointer-events: none;
+}
+.nothing:has(+ *) {
+    display: none;
+}
+.noselect {
+    user-select: none;
+}
+/* #endregion */
+
+/* #region Design */
+.container {
+    --padding: 0.5em;
+    --minWidth: 5em;
+    --minHeight: 5em;
+    z-index: 2 !important;
+}
+.text {
+    --minWidth: auto;
+    --minHeight: auto;
+}
+.element {
+    width: var(--width);
+    min-width: var(--minWidth);
+    max-width: var(--maxWidth);
+    height: var(--height);
+    min-height: var(--minHeight);
+    max-height: var(--maxHeight);
+    padding: var(--padding);
+    margin: var(--margin);
+}
+.layout-horizontal {
+    display: flex;
+    flex-wrap: wrap;
+}
+.layout-vertical {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+.layout-grid {
+    --cols: 2;
+    --rows: 2;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+}
+.layout-grid > .spacing {
+    display: none;
+}
+.layout-grid > .field {
+    width: 100%;
+    height: 100%;
+    min-width: 3em;
+    min-height: 3em;
+}
+.layout-horizontal.horizontal-start:not(.layout-grid),
+.layout-vertical.vertical-start:not(.layout-grid) {
+    justify-content: start;
+}
+.layout-horizontal.horizontal-center:not(.layout-grid),
+.layout-vertical.vertical-center:not(.layout-grid) {
+    justify-content: center;
+}
+.layout-horizontal.horizontal-end:not(.layout-grid),
+.layout-vertical.vertical-end:not(.layout-grid) {
+    justify-content: end;
+}
+.layout-horizontal.vertical-start:not(.layout-grid),
+.layout-vertical.horizontal-start:not(.layout-grid) {
+    align-content: start;
+}
+.layout-horizontal.vertical-center:not(.layout-grid),
+.layout-vertical.horizontal-center:not(.layout-grid) {
+    align-content: center;
+}
+.layout-horizontal.vertical-end:not(.layout-grid),
+.layout-vertical.horizontal-end:not(.layout-grid) {
+    align-content: end;
+}
+.layout-horizontal.vertical-center:not(.layout-grid) *,
+.layout-vertical.horizontal-center:not(.layout-grid) * {
+    align-self: center;
+}
+.layout-horizontal.vertical-end:not(.layout-grid) *,
+.layout-vertical.horizontal-end:not(.layout-grid) * {
+    align-self: end;
+}
+.layout-vertical .spacing {
+    width: min-content;
+    min-width: 1.5em;
+    margin: 0.5em auto;
+}
+.layout-horizontal .spacing {
+    height: auto;
+    min-height: 1em;
+    margin: 0 0.5em;
+}
+.spacing:before {
+    position: absolute;
+    content: '';
+    padding: 0.25em;
+    pointer-events: none;
+}
+.layout-horizontal > .spacing:before {
+    top: 50%;
+    left: 0;
+    width: calc(100% - 0.9em);
+    height: 0.4em;
+    border-left: solid var(--spacing-color, black);
+    border-right: solid var(--spacing-color, black);
+    background: linear-gradient(transparent 40%, var(--spacing-color, black) 40%, var(--spacing-color, black) 60%, transparent 60%);
+    transform: translateY(-50%);
+}
+.layout-vertical > .spacing:before {
+    top: 0;
+    left: 50%;
+    width: 0.4em;
+    height: calc(100% - 0.9em);
+    border-top: solid var(--spacing-color, black);
+    border-bottom: solid var(--spacing-color, black);
+    background: linear-gradient(90deg, transparent 40%, var(--spacing-color, black) 40%, var(--spacing-color, black) 60%, transparent 60%);
+    transform: translateX(-50%);
+}
+#previewContainer .spacing:before {
+    content: none;
+}
+/* #endregion */
+
+/* #region Settings */
+#settings {
+    display: flex;
+    position: fixed;
+    flex-direction: column;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    padding: 0 1em;
+    background-color: hsla(0, 0%, 75%, 0.9);
+    transform: translateX(100%);
+    transition: transform 0.5s;
+    z-index: 100;
+}
+#settings #dimensions {
+    --width: 10em;
+    --height: 10em;
+    position: relative;
+    width: var(--width);
+    height: var(--height);
+    margin: 3em 5em 3em 1em;
+    box-shadow: inset 0 0 0 calc(var(--width) / 9) #90ee90bf, 0 0 0 calc(var(--width) / 9) #ee9090bf;
+    border-radius: 0.5em;
+    background-color: #ffffff;
+}
+#settings #dimensions:before {
+    position: absolute;
+    content: '';
+    width: 100%;
+    height: 5px;
+    left: 0;
+    top: -2.75em;
+    box-shadow: -1px -1px 0 1px, 1px -1px 0 1px;
+}
+#settings #dimensions:after {
+    position: absolute;
+    content: '';
+    height: 100%;
+    width: 5px;
+    top: 0;
+    right: -2.75em;
+    z-index: -1;
+    box-shadow: 1px 1px 0 1px, 1px -1px 0 1px;
+}
+#settings #dimensions input,
+#settings #dimensions input + span {
+    position: absolute;
+    text-align: center;
+}
+#settings #dimensions span:nth-of-type(1):before {
+    content: '';
+}
+#settings #dimensions input:nth-of-type(1), /* width */
+#settings #dimensions input:nth-of-type(1) + span,
+#settings #dimensions input:nth-of-type(3), /* padding */
+#settings #dimensions input:nth-of-type(3) + span {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, var(--translateY, 0));
+}
+#settings #dimensions input:nth-of-type(2), /* height */
+#settings #dimensions input:nth-of-type(2) + span {
+    right: 0;
+    bottom: 50%;
+    transform: translate(var(--translateX), 50%);
+    writing-mode: sideways-rl;
+}
+#settings #dimensions input:nth-of-type(4), /* margin */
+#settings #dimensions input:nth-of-type(4) + span {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, var(--translateY, 0));
+}
+#settings #dimensions input:nth-of-type(1) { --translateY: -195% }
+#settings #dimensions input:nth-of-type(1) + span { --translateY: -360% }
+#settings #dimensions input:nth-of-type(2) { --translateX: 195% }
+#settings #dimensions input:nth-of-type(2) + span { --translateX: 360% }
+#settings #dimensions input:nth-of-type(3) { --translateY: 110% }
+#settings #dimensions input:nth-of-type(3) + span { --translateY: 10% }
+#settings #dimensions input:nth-of-type(4) { --translateY: 190% }
+#settings #dimensions input:nth-of-type(4) + span { --translateY: 90% }
+#settings #remove {
+    width: 4em;
+    height: 4em;
+    padding: 0;
+    margin: auto 0 1em;
+    line-height: 0;
+}
+#settings:has(~ #structureWrapper > .editing) #remove {
+    display: none;
+} 
+#settings:has(~ #structureWrapper .editing) {
+    transform: translateX(0);
+}
+#settings > div {
+    padding: 0.5em;
+    margin: 0.5em 0 1em;
+}
+#settings > div:first-of-type {
+    width: 100%;
+}
+#settings > h2 {
+    background-color: #ffffff;
+    padding: 0.5em;
+    margin: 1em 0;
+}
+#settings div:has(> input[type="radio"]) {
+    width: 6em;
+    aspect-ratio: 1;
+    outline: solid 1px #808080;
+}
+#settings div:has(> input:checked) {
+    outline: solid 2px darkviolet;
+}
+#settings div:has(> [type="radio"]) {
+    display: flex;
+}
+#settings div:has(> [value="layout-vertical"]) {
+    flex-direction: column;
+}
+#settings div:has(> [value="layout-grid"]) {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+}
+#settings div:has(> [value="layout-grid"]) div {
+    margin: 12% !important;
+}
+#settings input[type="radio"] ~ div {
+    flex: 1;
+    margin: 7.5%;
+    background-color: #ffffff;
+    border-radius: 0.5em;
+}
+#settings div.layout {
+    padding: 0;
+}
+#settings div.layout > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+#settings div.layout > div > div {
+    position: relative;
+    border-radius: 0.5em;
+}
+#settings div.layout input:first-of-type {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+#settings div.layout input[type="number"] {
+    display: none;
+    position: absolute;
+}
+#settings div.layout input:checked ~ input[type="number"] {
+    display: block;
+}
+#settings div.layout input[type="number"]:not(:first-of-type):not(:last-of-type) {
+    right: 0;
+    top: 50%;
+    transform: translate(115%, -50%);
+}
+#settings div.layout input[type="number"]:last-of-type {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -125%);
+}
+#settings .orientation {
+    width: min-content;
+}
+#settings .orientation > div {
+    flex-wrap: nowrap !important;
+    gap: 0.5em !important;
+}
+#settings .orientation > div > div {
+    width: 2em;
+    height: 2em;
+}
+#settings .orientation [value^="horizontal"] ~ div {
+    flex: unset;
+    width: 5px;
+}
+#settings .orientation [value^="vertical"] ~ div {
+    flex: unset;
+    height: 5px;
+}
+#settings .orientation div:has(> [value$="center"]) {
+    justify-content: center;
+}
+#settings .orientation div:has(> [value$="end"]) {
+    justify-content: end;
+}
+#settings .orientation div:has(> [value^="vertical"]) {
+    flex-direction: column;
+}
+#settings .orientation div:has(> [value^="horizontal"][value$="end"]) {
+    margin-right: 1em;
+}
+#settings label + input {
+    width: min-content;
+    margin: 0.5em 0;
+}
+#settings select.type {
+    width: min-content;
+    margin: 0.5em 0;
+}
+#settings .layout,
+#settings .type,
+#settings .text {
+    display: none;
+}
+#settings:has(~ #structureWrapper .editing[data-name="container"]) .layout,
+#settings:has(~ #structureWrapper .editing[data-name="value"]) .type,
+#settings:has(~ #structureWrapper .editing[data-name="text"]) .text {
+    display: block;
+}
+#settings:has(input[value="layout-grid"]:checked) .orientation {
+    display: none !important;
+}
+/* #endregion */
