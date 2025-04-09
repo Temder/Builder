@@ -4,7 +4,12 @@
     --padding: initial;
     --margin: initial;
     --width: initial;
+    --min-width: initial;
+    --max-width: initial;
     --height: initial;
+    --min-height: initial;
+    --max-height: initial;
+    --spacing-color: rgb(56, 153, 0);
 }
 body {
     font-family: sans-serif;
@@ -13,8 +18,59 @@ body {
     padding: 0.05px;
     padding: 1em;
 }
+details {
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 0.5em 0.5em 0;
+    margin-bottom: 1em;
+    /* transition: max-height 1s; */
+}
+details[open] {
+    padding: 0.5em;
+}
+details summary {
+    position: relative;
+    font-weight: bold;
+    margin: -0.5em -0.5em 0;
+    padding: 1rem;
+    padding-left: 2.2rem;
+    list-style-type: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .5s;
+}
+details summary:before {
+    content: '';
+    border-width: .4rem;
+    border-style: solid;
+    border-color: transparent transparent transparent #000;
+    position: absolute;
+    top: 1.2rem;
+    left: 1rem;
+    transform: rotate(0);
+    transform-origin: .2rem 50%;
+    transition: .25s transform ease;
+}
+details[open] summary {
+    border-bottom: 1px solid #000000;
+}
+details[open] summary:before {
+    transform: rotate(90deg);
+}
+/* details summary ~ * {
+    transition: transform .5s;
+}
+details[open] summary ~ * {
+    transform: translateY(0);
+}
+details:not([open]) summary ~ * {
+    transform: translateY(-100%);
+} */
 #elementsContainer {
     gap: 1em;
+}
+#elementsContainer > div {
+    display: block;
 }
 #structureContainer,
 #previewContainer {
@@ -81,7 +137,6 @@ body {
 }
 #structureContainer .spacing,
 #previewContainer .spacing {
-    --spacing-color: rgb(56, 153, 0);
     position: relative;
     flex-grow: 100;
 }
@@ -141,26 +196,35 @@ body {
 .noselect {
     user-select: none;
 }
+.nowrap {
+    flex-wrap: nowrap;
+}
 /* #endregion */
 
 /* #region Design */
+*[id^=element] {
+    height: min-content;
+    min-width: 5em;
+    min-height: 5em;
+}
+#element1 {
+}
+#element2 {
+    position: relative;
+    margin: 0;
+}
 .container {
-    --padding: 0.5em;
-    --minWidth: 5em;
-    --minHeight: 5em;
     z-index: 2 !important;
 }
-.text {
-    --minWidth: auto;
-    --minHeight: auto;
-}
+/* .text {
+} */
 .element {
     width: var(--width);
-    min-width: var(--minWidth);
-    max-width: var(--maxWidth);
+    min-width: var(--min-width);
+    max-width: var(--max-width);
     height: var(--height);
-    min-height: var(--minHeight);
-    max-height: var(--maxHeight);
+    min-height: var(--min-height);
+    max-height: var(--max-height);
     padding: var(--padding);
     margin: var(--margin);
 }
@@ -283,7 +347,7 @@ body {
     position: relative;
     width: var(--width);
     height: var(--height);
-    margin: 3em 5em 3em 1em;
+    margin: 4em 5em 2em 1em;
     box-shadow: inset 0 0 0 calc(var(--width) / 9) #90ee90bf, 0 0 0 calc(var(--width) / 9) #ee9090bf;
     border-radius: 0.5em;
     background-color: #ffffff;
@@ -348,7 +412,8 @@ body {
     width: 4em;
     height: 4em;
     padding: 0;
-    margin: auto 0 1em;
+    margin: 1.5rem;
+    margin-left: 0;
     line-height: 0;
 }
 #settings:has(~ #structureWrapper > .editing) #remove {
@@ -364,10 +429,11 @@ body {
 #settings > div:first-of-type {
     width: 100%;
 }
-#settings > h2 {
+#settings h2 {
     background-color: #ffffff;
+    width: 100%;
     padding: 0.5em;
-    margin: 1em 0;
+    margin: 1.5rem 0;
 }
 #settings div:has(> input[type="radio"]) {
     width: 6em;
@@ -475,12 +541,13 @@ body {
 }
 #settings .layout,
 #settings .type,
-#settings .text {
+#settings .text,
+#settings .image {
     display: none;
 }
 #settings:has(~ #structureWrapper .editing[data-name="container"]) .layout,
-#settings:has(~ #structureWrapper .editing[data-name="value"]) .type,
-#settings:has(~ #structureWrapper .editing[data-name="text"]) .text {
+#settings:has(~ #structureWrapper .editing[data-name="text"]) .text,
+#settings:has(~ #structureWrapper .editing[data-name="image"]) .image {
     display: block;
 }
 #settings:has(input[value="layout-grid"]:checked) .orientation {

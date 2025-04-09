@@ -12,40 +12,41 @@
     <div id="settings"></div>
     <span><b>Elements</b></span>
     <div id="elementsContainer" class="flex">
-        <div id="element1"
-             draggable="true"
-             class="element container layout-vertical horizontal-start vertical-start noselect"
-             data-name="container"
-             data-min-width="5em"
-             data-min-height="5em"
-             data-padding="0.5em"
-             ondragstart="dragStart(event)"
-             ondragend="dragEnd(); dragReset(event); refreshPreview();"
-             ondragover="allowDrop(event)"
-             ondrop="drop(event)">Container
+        <div>
+            <div id="element1"
+                 class="element container layout-vertical horizontal-start vertical-start noselect"
+                 data-name="container"
+                 data-min-width="5em"
+                 data-min-height="5em"
+                 data-padding="0.5em">
+            </div>Container
         </div>
-        <div id="element2"
-             draggable="true"
-             class="element spacing noselect"
-             data-name="spacing"
-             ondragstart="dragStart(event)"
-             ondragend="dragEnd(); dragReset(event); refreshPreview();"
-             ondragover="allowDrop(event)"
-             ondrop="drop(event)">Spacing
+        <div class="layout-horizontal">
+            <div id="element2"
+                 class="element spacing noselect"
+                 data-name="spacing">
+            </div>Spacing
         </div>
-        <div id="element3"
-             draggable="true"
-             class="element text noselect"
-             data-name="text"
-             ondragstart="dragStart(event)"
-             ondragend="dragEnd(); dragReset(event); refreshPreview();"
-             ondragover="allowDrop(event)"
-             ondrop="drop(event)">Text
+        <div>
+            <div id="element3"
+                 class="element text noselect"
+                 data-name="text">T
+            </div>Text
+        </div>
+        <div>
+            <div id="element4"
+                 class="element image noselect"
+                 data-name="image"
+                 data-width="5em"><img src="/graphics/placeholder.svg" alt="Placeholder" width="100%" height="100%">
+            </div>
         </div>
     </div>
     <span><b>Structure</b></span>
     <div id="structureWrapper">
-        <div id="structureContainer" class="flex element layout-vertical horizontal-start vertical-start" data-name="container" data-width="auto" data-height="20em" data-padding="0.5em" data-margin="0" ondragover="allowDrop(event)" ondrop="drop(event)" ondragleave="dragReset(event)">
+        <div id="structureContainer"
+             class="flex element layout-vertical horizontal-start vertical-start"
+             data-name="container" data-min-height="30em" data-padding="0.5em"
+             ondragover="allowDrop(event)" ondrop="drop(event)" ondragleave="dragReset(event)">
             <div class="nothing">Drag header items and other layouts into here</div>
         </div>
         <div id="previewContainer" class="flex layout-vertical horizontal-start vertical-start">

@@ -1,3 +1,6 @@
+let elements = document.querySelectorAll('#elementsContainer .element');
+let settings = document.getElementById('settings');
+let structureContainer = document.getElementById('structureContainer');
 let draggingElement = null;
 let structureItem = null;
 let editing = null;
@@ -8,13 +11,6 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
                       'horizontal-start','horizontal-center', 'horizontal-end',
                       'vertical-start',  'vertical-center',   'vertical-end'
 ];
-let sheetUrlInput = document.getElementById('sheetUrl');
-let loadDesignButton = document.getElementById('loadDesign');
-let getTableHeadersButton = document.getElementById('getTableHeaders');
-let headerContainer = document.getElementById('headerContainer');
-let structureContainer = document.getElementById('structureContainer');
-let listContainer = document.getElementById('listContainer');
-let settings = document.getElementById('settings');
 
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
@@ -26,6 +22,22 @@ document.onclick = function(event) {
         }
     }
 }
+elements.forEach(element => {
+    element.draggable='true';
+    Array.from(element.children).forEach(function(child) {
+        child.style.pointerEvents = 'none';
+        child.style.zIndex = '0';
+    });
+    element.setAttribute('ondragstart', 'dragStart(event)');
+    element.setAttribute('ondragend', 'dragEnd(); dragReset(event); refreshPreview();');
+    element.setAttribute('ondragover', 'allowDrop(event)');
+    element.setAttribute('ondrop', 'drop(event)');
+    Array.from(element.attributes).forEach(function(attr) {
+        if (attr.name.startsWith('data-')) {
+            element.style.setProperty(`--${attr.name.replace('data-', '')}`, attr.value);
+        }
+    });
+});
 
 // #region Dragging
 function dragStart(event) {
@@ -48,7 +60,7 @@ function addIndicators() {
     structureContainer.insertAdjacentHTML('beforeend', '<div class="field"></div>');
 }
 function allowDrop(event) {
-    if (event.target.parentElement.id == 'elementsContainer') {
+    if (event.target.parentElement.id == 'elementsContainer' || event.target.parentElement.parentElement.id == 'elementsContainer') {
         return;
     }
     draggingElement = document.getElementById(event.dataTransfer.getData('id'));
@@ -127,33 +139,39 @@ function dragReset(event) {
 function showSettings(ele) {
     editing = ele;
     settings.innerHTML = /*html*/`
-        <h2>Editing "${ele.dataset.name.charAt(0).toUpperCase() + ele.dataset.name.slice(1)}"</h2>
-        <div class="flex">
-            <div id="dimensions">
-                <input size="1" name="width" value="${ele.dataset.width ? ele.dataset.width : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <span>Width</span>
-                <input size="1" name="height" value="${ele.dataset.height ? ele.dataset.height : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <span>Height</span>
-                <input size="1" name="padding" value="${ele.dataset.padding ? ele.dataset.padding : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <span>Padding</span>
-                <input size="1" name="margin" value="${ele.dataset.margin ? ele.dataset.margin : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <span>Margin</span>
-            </div>
-            <div>
-                <label>Min-Width</label>
-                <input size="1" name="minWidth" value="${ele.dataset.minWidth ? ele.dataset.minWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <br>
-                <label>Max-Width</label>
-                <input size="1" name="maxWidth" value="${ele.dataset.maxWidth ? ele.dataset.maxWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-            </div>
-            <div>
-                <label>Min-Height</label>
-                <input size="1" name="minHeight" value="${ele.dataset.minHeight ? ele.dataset.minHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                <br>
-                <label>Max-Height</label>
-                <input size="1" name="maxHeight" value="${ele.dataset.maxHeight ? ele.dataset.maxHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-            </div>
+        <div class="flex nowrap">
+            <button id="remove" onclick="removeElement()"><img src="/graphics/remove.svg" /></button>
+            <h2>Editing "${ele.dataset.name.charAt(0).toUpperCase() + ele.dataset.name.slice(1)}"</h2>
         </div>
+        <details>
+            <summary>Dimensions</summary>
+            <div class="flex">
+                <div id="dimensions">
+                    <input size="1" name="width" value="${ele.dataset.width ? ele.dataset.width : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <span>Width</span>
+                    <input size="1" name="height" value="${ele.dataset.height ? ele.dataset.height : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <span>Height</span>
+                    <input size="1" name="padding" value="${ele.dataset.padding ? ele.dataset.padding : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <span>Padding</span>
+                    <input size="1" name="margin" value="${ele.dataset.margin ? ele.dataset.margin : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <span>Margin</span>
+                </div>
+                <div>
+                    <label>Min-Width</label>
+                    <input size="1" name="minWidth" value="${ele.dataset.minWidth ? ele.dataset.minWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <br>
+                    <label>Max-Width</label>
+                    <input size="1" name="maxWidth" value="${ele.dataset.maxWidth ? ele.dataset.maxWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                </div>
+                <div>
+                    <label>Min-Height</label>
+                    <input size="1" name="minHeight" value="${ele.dataset.minHeight ? ele.dataset.minHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <br>
+                    <label>Max-Height</label>
+                    <input size="1" name="maxHeight" value="${ele.dataset.maxHeight ? ele.dataset.maxHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                </div>
+            </div>
+        </details>
         <label class="layout">Layout</label>
         <div class="layout">
             <div><div>
@@ -215,7 +233,8 @@ function showSettings(ele) {
         <input class="type" size="1" value="${ele.dataset.empty != undefined ? ele.dataset.empty : 'no data'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeEmpty(this.value);">
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
-        <button id="remove" onclick="removeElement()"><img src="/graphics/remove.svg" /></button>
+        <label class="image">Image URL</label>
+        <input class="image" size="1" value="${ele.querySelector('img') ? ele.querySelector('img').src : 'noImage'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeImage(this.value != '' ? this.value : '/graphics/placeholder.svg');">
     `;
     document.querySelectorAll('#settings input').forEach(el => el.size = el.value.length == 0 ? 1 : el.value.length);
     let grid = document.querySelector('#settings div:has(> [value="layout-grid"])');
@@ -231,11 +250,11 @@ function changeProperty(self) {
     let property = self.name;
     editing.dataset[property] = self.value;
     if (self.value != 0) {
-        editing.style.setProperty(property, self.value ? self.value : 'none');
-        editing.style.setProperty(`--${property}`, self.value ? self.value : 'none');
+        //editing.style.setProperty(property, self.value ? self.value : 'none');
+        editing.style.setProperty(`--${convertToDashStyle(property)}`, self.value ? self.value : 'none');
     } else {
-        editing.style.removeProperty(property);
-        editing.style.removeProperty(`--${property}`);
+        //editing.style.removeProperty(property);
+        editing.style.removeProperty(`--${convertToDashStyle(property)}`);
     }
     refreshPreview();
 }
@@ -245,6 +264,10 @@ function changeEmpty(empty) {
 }
 function changeText(text) {
     editing.innerText = text;
+    refreshPreview();
+}
+function changeImage(src) {
+    editing.querySelector('img').src = src;
     refreshPreview();
 }
 function changeRows(rows) {
@@ -380,4 +403,7 @@ function changeElementTag(element, newTag) {
     }
     element.parentNode.replaceChild(newElement, element);
     return newElement;
+}
+function convertToDashStyle(str) {
+    return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
