@@ -1,7 +1,7 @@
 /* #region Main */
 :root {
     --color-main-bg: #ffffff;
-    --color-main-fg: #000000;
+    --color-main-fg: #1a1a1a;
     --color-settings-bg: #bfbfbf;
     --color-settings-fg: #404040;
     --color-main-border-1: #737373;
@@ -11,7 +11,7 @@
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-main-bg: #000000;
+        --color-main-bg: #1a1a1a;
         --color-main-fg: #ffffff;
         --color-settings-bg: #404040;
         --color-settings-fg: #bfbfbf;
