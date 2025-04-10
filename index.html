@@ -10,42 +10,38 @@
 </head>
 <body>
     <div id="settings"></div>
+    <button class="changeTheme">
+        <svg id="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M256 48v48M256 416v48M403.08 108.92l-33.94 33.94M142.86 369.14l-33.94 33.94M464 256h-48M96 256H48M403.08 403.08l-33.94-33.94M142.86 142.86l-33.94-33.94"/><circle cx="256" cy="256" r="80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32"/></svg>
+        <svg id="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 136c0-30.62 4.51-61.61 16-88C99.57 81.27 48 159.32 48 248c0 119.29 96.71 216 216 216 88.68 0 166.73-51.57 200-128-26.39 11.49-57.38 16-88 16-119.29 0-216-96.71-216-216z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/></svg>
+    </button>
     <span><b>Elements</b></span>
     <div id="elementsContainer" class="flex">
-        <div>
-            <div id="element1"
-                 class="element container layout-vertical horizontal-start vertical-start noselect"
-                 data-name="container"
-                 data-min-width="5em"
-                 data-min-height="5em"
-                 data-padding="0.5em">
-            </div>Container
+        <div id="element1"
+             class="element container layout-vertical horizontal-start vertical-start noselect"
+             data-name="Container"
+             data-min-width="5em"
+             data-min-height="5em"
+             data-padding="0.5em">
         </div>
-        <div class="layout-horizontal">
-            <div id="element2"
-                 class="element spacing noselect"
-                 data-name="spacing">
-            </div>Spacing
+        <div id="element2"
+             class="element spacing noselect"
+             data-name="Spacing">
         </div>
-        <div>
-            <div id="element3"
-                 class="element text noselect"
-                 data-name="text">T
-            </div>Text
+        <div id="element3"
+             class="element text noselect"
+             data-name="Text">Text
         </div>
-        <div>
-            <div id="element4"
-                 class="element image noselect"
-                 data-name="image"
-                 data-width="5em"><img src="/graphics/placeholder.svg" alt="Placeholder" width="100%" height="100%">
-            </div>
+        <div id="element4"
+             class="element image noselect"
+             data-name="Image"
+             data-width="5em"><img src="/graphics/placeholder.svg" alt="Placeholder" width="100%" height="100%">
         </div>
     </div>
     <span><b>Structure</b></span>
     <div id="structureWrapper">
         <div id="structureContainer"
              class="flex element layout-vertical horizontal-start vertical-start"
-             data-name="container" data-min-height="30em" data-padding="0.5em"
+             data-name="Container" data-min-height="30em" data-padding="0.5em"
              ondragover="allowDrop(event)" ondrop="drop(event)" ondragleave="dragReset(event)">
             <div class="nothing">Drag header items and other layouts into here</div>
         </div>

@@ -53,7 +53,7 @@ function dragStart(event) {
 function addIndicators() {
     structureContainer.querySelectorAll('.structure-item').forEach(function(el) {
         el.insertAdjacentHTML('beforebegin', '<div class="field"></div>');
-        if (el.getAttribute('data-name') == 'container') {
+        if (el.getAttribute('data-name').toLowerCase() == 'container') {
             el.insertAdjacentHTML('beforeend', '<div class="field"></div>');
         }
     });
@@ -93,7 +93,7 @@ function drop(event) {
         structureItem.style.removeProperty('display');
         structureItem.style.opacity = '1';
         structureItem.classList.add('structure-item');
-        if (['container', 'spacing'].includes(structureItem.getAttribute('data-name'))) {
+        if (['container', 'spacing'].includes(structureItem.getAttribute('data-name').toLowerCase())) {
             structureItem.childNodes.forEach(function(node) {
                 if (node.nodeName == '#text') node.remove();
             });
@@ -141,7 +141,7 @@ function showSettings(ele) {
     settings.innerHTML = /*html*/`
         <div class="flex nowrap">
             <button id="remove" onclick="removeElement()"><img src="/graphics/remove.svg" /></button>
-            <h2>Editing "${ele.dataset.name.charAt(0).toUpperCase() + ele.dataset.name.slice(1)}"</h2>
+            <h2>Editing "${ele.dataset.name}"</h2>
         </div>
         <details>
             <summary>Dimensions</summary>
@@ -157,17 +157,17 @@ function showSettings(ele) {
                     <span>Margin</span>
                 </div>
                 <div>
-                    <label>Min-Width</label>
+                    <label>Minimal width</label>
                     <input size="1" name="minWidth" value="${ele.dataset.minWidth ? ele.dataset.minWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                     <br>
-                    <label>Max-Width</label>
+                    <label>Maximal width</label>
                     <input size="1" name="maxWidth" value="${ele.dataset.maxWidth ? ele.dataset.maxWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                 </div>
                 <div>
-                    <label>Min-Height</label>
+                    <label>Minimal height</label>
                     <input size="1" name="minHeight" value="${ele.dataset.minHeight ? ele.dataset.minHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                     <br>
-                    <label>Max-Height</label>
+                    <label>Maximal height</label>
                     <input size="1" name="maxHeight" value="${ele.dataset.maxHeight ? ele.dataset.maxHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                 </div>
             </div>
@@ -224,13 +224,27 @@ function showSettings(ele) {
                     <div></div><div></div>
             </div></div>
         </div>
-        <label for="type" class="type">Viewing Type</label>
+        <!--<label for="type" class="type">Viewing Type</label>
         <select name="type" class="type" onchange="changeType(this.value)">
             <option value="text" ${ele.dataset.type == 'text' ? 'selected' : ''}>Text</option>
             <option value="image" ${ele.dataset.type == 'image' ? 'selected' : ''}>Image</option>
         </select>
         <label class="type">Empty Text</label>
-        <input class="type" size="1" value="${ele.dataset.empty != undefined ? ele.dataset.empty : 'no data'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeEmpty(this.value);">
+        <input class="type" size="1" value="${ele.dataset.empty != undefined ? ele.dataset.empty : 'no data'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeEmpty(this.value);">-->
+        <label class="text">Style</label>
+        <div class="text">
+            <label>Font size</label>
+            <input size="1" name="fontSize" value="${ele.dataset.fontSize ? ele.dataset.fontSize : '1em'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+            <div class="flex nowrap">
+                <div><input class="togglebutton" type="checkbox" onclick="changeProperty(this)" name="fontWeight" value="bold" ${ele.dataset.fontWeight == 'bold' ? 'checked' : ''} />B</div>
+                <div><input class="togglebutton" type="checkbox" onclick="changeProperty(this)" name="fontStyle" value="italic" ${ele.dataset.fontStyle == 'italic' ? 'checked' : ''} />I</div>
+                <div><input class="togglebutton" type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="underline" ${ele.dataset.textDecoration == 'underline' ? 'checked' : ''} />U</div>
+            </div>
+            <!--<select onchange="changeProperty(this)">
+            <option value="fontWeight" ${ele.dataset.fontWeight == 'bold' ? 'selected' : ''}>Bold</option>
+            <option value="fontStyle" ${ele.dataset.fontStyle == 'italic' ? 'selected' : ''}>Italic</option>
+            </select>-->
+        </div>
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
         <label class="image">Image URL</label>
@@ -247,14 +261,25 @@ function showSettings(ele) {
     grid.insertAdjacentHTML('beforeend', '<div></div>'.repeat(grid.style.getPropertyValue('--rows') * grid.style.getPropertyValue('--cols')))
 }
 function changeProperty(self) {
-    let property = self.name;
-    editing.dataset[property] = self.value;
-    if (self.value != 0) {
-        //editing.style.setProperty(property, self.value ? self.value : 'none');
-        editing.style.setProperty(`--${convertToDashStyle(property)}`, self.value ? self.value : 'none');
+    var property;
+    var value;
+    if (self.tagName == 'SELECT') {
+        [...self.options].map(o => o.value).forEach(function(option) {
+            editing.style.removeProperty(`--${convertToDashStyle(option)}`);
+        });
+        property = self.value;
+        value = self.options[self.selectedIndex].text;
     } else {
-        //editing.style.removeProperty(property);
+        property = self.name;
+        value = self.value;
+    }
+    editing.dataset[property] = value;
+    //console.log(`    Key: ${property}, Value: ${self.value}`);
+    //editing.style.setProperty(property, self.value ? self.value : 'none');
+    editing.style.setProperty(`--${convertToDashStyle(property)}`, value ? value : 'none');
+    if (value == 0 || self.type == 'checkbox' && self.checked == false) {
         editing.style.removeProperty(`--${convertToDashStyle(property)}`);
+        //editing.style.removeProperty(property);
     }
     refreshPreview();
 }
@@ -299,7 +324,7 @@ function changeCols(cols) {
     refreshPreview();
 }
 function changeType(type) {
-    editing.dataset.type = type;
+    /* editing.dataset.type = type;
     if (type == 'image') {
         editing.dataset.width = editing.dataset.height = '50%';
         editing.style.setProperty('--width', '50%');
@@ -308,7 +333,8 @@ function changeType(type) {
         editing.style.removeProperty('--width');
         editing.style.removeProperty('--height');
     }
-    settingsView(editing);
+    settingsView(editing); */
+    
     refreshPreview();
 }
 function changeLayout(layout) {
@@ -337,6 +363,46 @@ function removeElement() {
     refreshPreview();
 }
 // #endregion
+
+
+
+
+
+//#region Theme switcher
+function changeTheme() {
+    Object.entries(colorVariables).forEach(([key, val]) => {
+        var var1 = getComputedStyle(document.documentElement).getPropertyValue(key)
+        var var2 = getComputedStyle(document.documentElement).getPropertyValue(val)
+        document.documentElement.style.setProperty(key, var2);
+        document.documentElement.style.setProperty(val, var1);
+    })
+}
+if (localStorage.getItem('theme')) {
+    var currentTheme = localStorage.getItem('theme');
+} else {
+    var currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? 'dark' : 'light';
+}
+var style = document.styleSheets[0].cssRules[0].style;
+var userTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+let colorVariables = {};
+for (let i = 1; i < style.length; i=i+2) {
+  colorVariables[style[i-1]] = style[i];
+}
+
+document.querySelectorAll('.changeTheme').forEach(el => {
+    el.addEventListener('click', function() {
+        changeTheme();
+        currentTheme = currentTheme == 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', currentTheme);
+    })
+})
+if (userTheme != currentTheme) {
+    changeTheme();
+}
+//#endregion
+
+
+
 
 
 function refreshPreview() {
