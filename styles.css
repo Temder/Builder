@@ -8,6 +8,8 @@
     --color-main-border-2: #8c8c8c;
     --display-sun: block;
     --display-moon: none;
+    --filter-invert-1: invert(0);
+    --filter-invert-2: invert(1);
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -263,7 +265,8 @@ details:not([open]) summary ~ * {
 }
 /* .text {}
 .spacing {}
-.image */
+.svg {}
+.image {} */
 .element {
     width: var(--width);
     min-width: var(--min-width);
@@ -305,6 +308,14 @@ details:not([open]) summary ~ * {
     padding: 0;
     background-color: var(--color-spacing);
     clip-path: polygon(0% 41%, 4% 41%, 4% 48%, 48% 48%, 48% 4%, 41% 4%, 41% 0%, 59% 0%, 59% 4%, 52% 4%, 52% 48%, 96% 48%, 96% 41%, 100% 41%, 100% 59%, 96% 59%, 96% 52%, 52% 52%, 52% 96%, 59% 96%, 59% 100%, 41% 100%, 41% 96%, 48% 96%, 48% 52%, 4% 52%, 4% 59%, 0% 59%, 0% 100%, 100% 100%, 100% 140%, 0% 140%);
+}
+.element img,
+.element svg {
+    display: none;
+}
+.element[data-name="Image"] img,
+.element[data-name="SVG"] svg {
+    display: block;
 }
 .layout-horizontal {
     display: flex;
@@ -566,7 +577,7 @@ details:not([open]) summary ~ * {
 #settings input[type="radio"] ~ div {
     flex: 1;
     margin: 7.5%;
-    background-color: var(--color-main-bg);
+    background-color: var(--color-main-border-1);
     border-radius: 0.5em;
 }
 #settings div.layout {
@@ -648,12 +659,14 @@ details:not([open]) summary ~ * {
 #settings .layout,
 #settings .type,
 #settings .text,
-#settings .image {
+#settings .image,
+#settings .svg {
     display: none;
 }
 #settings:has(~ #structureWrapper .editing[data-name="Container"]) .layout,
 #settings:has(~ #structureWrapper .editing[data-name="Text"]) .text,
-#settings:has(~ #structureWrapper .editing[data-name="Image"]) .image {
+#settings:has(~ #structureWrapper .editing[data-name="Image"]) .image,
+#settings:has(~ #structureWrapper .editing[data-name="SVG"]) .svg {
     display: block;
 }
 #settings:has(input[value="layout-grid"]:checked) .orientation {
@@ -661,7 +674,7 @@ details:not([open]) summary ~ * {
 }
 /* #endregion */
 
-/*#region Theme switcher*/
+/* #region Theme switcher */
 #moon {
     display: var(--display-moon);
 }
@@ -675,7 +688,7 @@ details:not([open]) summary ~ * {
     padding: 0.5em;
     transition: transform 0.5s;
     background-color: var(--color-settings-bg);
-    color: var(--color-settings-fg);
+    color: var(--color-main-fg);
 }
 #moon:hover,
 #sun:hover {

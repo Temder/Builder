@@ -247,8 +247,8 @@ function showSettings(ele) {
         </div>
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
-        <label class="image">Image URL</label>
-        <input class="image" size="1" value="${ele.querySelector('img') ? ele.querySelector('img').src : 'noImage'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeImage(this.value != '' ? this.value : '/graphics/placeholder.svg');">
+        <label class="image svg">${ele.dataset.name} URL</label>
+        <textarea class="svg" size="1" value="" oninput="changeSVG(this.value != '' ? this.value : '<svg></svg>');">${ele.querySelector('svg') ? ele.querySelector('svg').outerHTML.replaceAll('"', '\'') : 'no svg'}</textarea>
     `;
     document.querySelectorAll('#settings input').forEach(el => el.size = el.value.length == 0 ? 1 : el.value.length);
     let grid = document.querySelector('#settings div:has(> [value="layout-grid"])');
@@ -293,6 +293,15 @@ function changeText(text) {
 }
 function changeImage(src) {
     editing.querySelector('img').src = src;
+    refreshPreview();
+}
+function changeSVG(svg) {
+    editing.querySelector('svg').remove();
+    editing.insertAdjacentHTML('beforeend', svg);
+    Array.from(editing.children).forEach(function(child) {
+        child.style.pointerEvents = 'none';
+        child.style.zIndex = '0';
+    });
     refreshPreview();
 }
 function changeRows(rows) {
