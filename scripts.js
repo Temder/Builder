@@ -247,9 +247,11 @@ function showSettings(ele) {
         </div>
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
-        <label class="image svg">${ele.dataset.name} URL</label>
-        <textarea class="svg" size="1" value="" oninput="changeSVG(this.value != '' ? this.value : '<svg></svg>');">${ele.querySelector('svg') ? ele.querySelector('svg').outerHTML.replaceAll('"', '\'') : 'no svg'}</textarea>
+        <label class="image svg">${ele.dataset.name} ${ele.dataset.name.toLowerCase() == 'image' ? 'URL' : 'Code'}</label>
+        <textarea class="svg" size="1" value="" oninput="changeSVG(this, this.value != '' ? this.value : '<svg></svg>');">${ele.querySelector('svg') ? formatXML(ele.querySelector('svg').outerHTML) : 'no svg'}</textarea>
+        <pre class="svg" contenteditable="true" spellcheck="false" oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>');"></pre>
     `;
+    document.querySelector('#settings pre').innerText = ele.querySelector('svg') ? formatXML(ele.querySelector('svg').outerHTML) : 'no svg';
     document.querySelectorAll('#settings input').forEach(el => el.size = el.value.length == 0 ? 1 : el.value.length);
     let grid = document.querySelector('#settings div:has(> [value="layout-grid"])');
     if (!grid.style.getPropertyValue('--rows')) {
@@ -287,6 +289,11 @@ function changeEmpty(empty) {
     editing.dataset.empty = empty;
     refreshPreview();
 }
+function changeName(name) {
+    editing.dataset.name = name;
+    refreshPreview();
+    
+}
 function changeText(text) {
     editing.innerText = text;
     refreshPreview();
@@ -295,14 +302,69 @@ function changeImage(src) {
     editing.querySelector('img').src = src;
     refreshPreview();
 }
-function changeSVG(svg) {
-    editing.querySelector('svg').remove();
+function changeSVG(self, svg) {
+    if (editing.querySelector('svg')) editing.querySelector('svg').remove();
+    
+    let reformat = !/^<svg.*>\n(\s{2,}<.*>\n\s{2,}<\/.*>\n)*<\/svg>/g.test(svg);
+
+    // Replace stroke and fill colors with currentColor, except "none", white and black
+    /* svg = svg.replace(/stroke="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g, 'stroke="currentColor"')
+             .replace(/fill="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g, 'fill="currentColor"'); */
+
+    if (/stroke="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g.test(svg)) {
+        svg = svg.replace(/stroke="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g, 'stroke="currentColor"');
+        reformat = true;
+    }
+    if (/fill="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g.test(svg)) {
+        svg = svg.replace(/fill="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g, 'fill="currentColor"');
+        reformat = true;
+    }
+
+    console.log(`SVG: ${svg}`);
+    console.log(`Reformat SVG: ${reformat}`);
+
+    if (reformat) {
+        self.innerText = formatXML(svg);
+    }
     editing.insertAdjacentHTML('beforeend', svg);
     Array.from(editing.children).forEach(function(child) {
         child.style.pointerEvents = 'none';
         child.style.zIndex = '0';
     });
     refreshPreview();
+}
+function formatXML(svgText) {
+    // Entferne überflüssige Leerzeichen und neue Zeilen
+    svgText = svgText.trim();
+
+    // Füge Einzüge und neue Zeilen hinzu
+    const formattedSVG = svgText.replace(/(<[^>]+>)/g, '\n$1');
+
+    // Füge Einzüge für verschachtelte Elemente hinzu
+    const lines = formattedSVG.split('\n');
+    let indentLevel = 0;
+    const indentedLines = [];
+
+    for (const line of lines) {
+        const trimmedLine = line.trim(); // Entferne führende und nachfolgende Leerzeichen
+        if (trimmedLine === '') {
+            continue; // Überspringe leere Zeilen
+        }
+        if (trimmedLine.match(/<[^/]/)) {
+            const indent = '  '.repeat(indentLevel);
+            indentLevel++;
+            indentedLines.push(indent + trimmedLine);
+        } else if (trimmedLine.match(/<\//)) {
+            indentLevel--;
+            const indent = '  '.repeat(indentLevel);
+            indentedLines.push(indent + trimmedLine);
+        } else {
+            const indent = '  '.repeat(indentLevel);
+            indentedLines.push(indent + trimmedLine);
+        }
+    }
+
+    return indentedLines.join('\n');
 }
 function changeRows(rows) {
     editing.dataset.rows = rows;

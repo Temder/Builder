@@ -1,24 +1,26 @@
 /* #region Main */
 :root {
+    --color-element-hover-1: #00000030;
+    --color-element-hover-2: #ffffff30;
     --color-main-bg: #ffffff;
     --color-main-fg: #1a1a1a;
-    --color-settings-bg: #bfbfbf;
-    --color-settings-fg: #404040;
     --color-main-border-1: #737373;
     --color-main-border-2: #8c8c8c;
+    --color-settings-bg: #bfbfbf;
+    --color-settings-fg: #404040;
     --display-sun: block;
     --display-moon: none;
-    --filter-invert-1: invert(0);
-    --filter-invert-2: invert(1);
 }
 @media (prefers-color-scheme: dark) {
     :root {
+        --color-element-hover-1: #ffffff30;
+        --color-element-hover-2: #00000030;
         --color-main-bg: #1a1a1a;
         --color-main-fg: #ffffff;
-        --color-settings-bg: #404040;
-        --color-settings-fg: #bfbfbf;
         --color-main-border-1: #8c8c8c;
         --color-main-border-2: #737373;
+        --color-settings-bg: #404040;
+        --color-settings-fg: #bfbfbf;
         --display-sun: none;
         --display-moon: block;
     }
@@ -36,7 +38,6 @@
     --color-spacing: #389900;
     --color-padding: #90ee90bf;
     --color-margin: #ee9090bf;
-    --color-element-hover: #00000030;
     --color-editing-outline: #9400d3;
     --color-field: #ffe6b6;
 }
@@ -71,7 +72,7 @@ details summary {
     transition: transform .5s;
 }
 details summary:before {
-    content: '';
+    content: "";
     border-width: .4rem;
     border-style: solid;
     border-color: transparent transparent transparent var(--color-settings-fg);
@@ -87,6 +88,16 @@ details[open] summary {
 }
 details[open] summary:before {
     transform: rotate(90deg);
+}
+textarea {
+    width: 100%;
+    height: 20em;
+    padding: 1em;
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
+    background-color: var(--color-main-bg);
+    color: var(--color-main-fg);
+    resize: vertical;
 }
 /* details summary ~ * {
     transition: transform .5s;
@@ -119,7 +130,7 @@ details:not([open]) summary ~ * {
     flex-wrap: wrap;
 }
 #structureContainer:before {
-    content: 'Structure Builder';
+    content: "Structure Builder";
     position: absolute;
     left: 0;
     top: -2em;
@@ -127,7 +138,7 @@ details:not([open]) summary ~ * {
     pointer-events: none;
 }
 #previewContainer:before {
-    content: 'Preview';
+    content: "Preview";
     position: absolute;
     left: 0;
     top: -2em;
@@ -146,7 +157,7 @@ details:not([open]) summary ~ * {
 #structureContainer:after,
 #structureContainer *:not(.nothing):after {
     --m: var(--margin, 0.01px);
-    content: '';
+    content: "";
     position: absolute;
     left: calc(var(--m) * -1);
     top: calc(var(--m) * -1);
@@ -157,7 +168,7 @@ details:not([open]) summary ~ * {
 }
 #structureContainer:hover:not(:has(:hover)):after,
 #structureContainer *:not(.nothing):hover:not(:has(:hover)):after {
-    background-color: var(--color-element-hover);
+    background-color: var(--color-element-hover-1);
 }
 #structureContainer:hover *:not(.nothing),
 #structureContainer *:hover *:not(.nothing) {
@@ -244,7 +255,7 @@ details:not([open]) summary ~ * {
     align-content: center;
 }
 *:has( > .togglebutton):before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -288,18 +299,22 @@ details:not([open]) summary ~ * {
     align-content: center;
     cursor: grab;
 }
-*[id^=element]:not(#elementsContainer):after {
+#elementsContainer > *[id^=element]:after {
     content: attr(data-name);
     position: absolute;
     left: 50%;
     width: 100%;
-    bottom: -2em;
-    transform: translateX(-50%);
-    line-height: 2;
+    bottom: -1.5em;
+    transform: translate(-50%, 50%);
+    /* line-height: 2; */
     pointer-events: all;
 }
+#elementsContainer *[id^=element][data-name="Image"]:after,
+#elementsContainer *[id^=element][data-name="SVG"]:after {
+    content: "Image/SVG";
+}
 #element2:before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -385,13 +400,13 @@ details:not([open]) summary ~ * {
     margin: 0 0.5em;
 }
 .spacing:before {
-    content: '';
+    content: "";
     position: absolute;
     padding: 0.25em;
     pointer-events: none;
 }
 .spacing:after {
-    content: '';
+    content: "";
     position: absolute;
     pointer-events: none;
 }
@@ -438,7 +453,7 @@ details:not([open]) summary ~ * {
     z-index: 100;
 }
 #settings:before {
-    content: url('./graphics/close.svg');
+    content: url("./graphics/close.svg");
     position: absolute;
     bottom: 0;
     left: -3em;
@@ -450,7 +465,7 @@ details:not([open]) summary ~ * {
     pointer-events: none;
 }
 #settings:after {
-    content: '';
+    content: "";
     position: absolute;
     left: -1em;
     bottom: 3em;
@@ -471,7 +486,7 @@ details:not([open]) summary ~ * {
     background-color: var(--color-main-bg);
 }
 #settings #dimensions:before {
-    content: '';
+    content: "";
     position: absolute;
     width: 100%;
     height: 5px;
@@ -480,7 +495,7 @@ details:not([open]) summary ~ * {
     box-shadow: -1px -1px 0 1px, 1px -1px 0 1px;
 }
 #settings #dimensions:after {
-    content: '';
+    content: "";
     position: absolute;
     height: 100%;
     width: 5px;
@@ -495,7 +510,7 @@ details:not([open]) summary ~ * {
     text-align: center;
 }
 #settings #dimensions span:nth-of-type(1):before {
-    content: '';
+    content: "";
 }
 #settings #dimensions input:nth-of-type(1), /* width */
 #settings #dimensions input:nth-of-type(1) + span,
@@ -522,10 +537,10 @@ details:not([open]) summary ~ * {
 #settings #dimensions input:nth-of-type(1) + span { --translateY: -360% }
 #settings #dimensions input:nth-of-type(2) { --translateX: 195% }
 #settings #dimensions input:nth-of-type(2) + span { --translateX: 360% }
-#settings #dimensions input:nth-of-type(3) { --translateY: 110% }
-#settings #dimensions input:nth-of-type(3) + span { --translateY: 10% }
+#settings #dimensions input:nth-of-type(3) { --translateY: 95% }
+#settings #dimensions input:nth-of-type(3) + span { --translateY: -15% }
 #settings #dimensions input:nth-of-type(4) { --translateY: 190% }
-#settings #dimensions input:nth-of-type(4) + span { --translateY: 90% }
+#settings #dimensions input:nth-of-type(4) + span { --translateY: 85% }
 #settings #remove {
     width: 4em;
     height: 4em;
@@ -551,6 +566,16 @@ details:not([open]) summary ~ * {
     width: 100%;
     padding: 0.5em;
     margin: 1.5rem 0 1rem;
+    border-radius: 0.2em;
+}
+#settings pre {
+    padding: 1em;
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
+    background-color: var(--color-main-bg);
+    font-size: 12px;
+    overflow-x: auto;
+    resize: vertical;
 }
 #settings div:has(> input[type="radio"]) {
     width: 6em;
@@ -574,10 +599,17 @@ details:not([open]) summary ~ * {
 #settings div:has(> [value="layout-grid"]) div {
     margin: 12% !important;
 }
+#settings input {
+    text-align: center;
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
+    background-color: var(--color-main-bg);
+    color: var(--color-main-fg);
+}
 #settings input[type="radio"] ~ div {
     flex: 1;
     margin: 7.5%;
-    background-color: var(--color-main-border-1);
+    background-color: #fff;
     border-radius: 0.5em;
 }
 #settings div.layout {
