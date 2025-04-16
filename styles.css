@@ -8,6 +8,14 @@
     --color-main-border-2: #8c8c8c;
     --color-settings-bg: #bfbfbf;
     --color-settings-fg: #404040;
+    --color-svg-attr-1: #3ab9fd;
+    --color-svg-attr-2: #9cdcfe;
+    --color-svg-tag-1: #286ca4;
+    --color-svg-tag-2: #579dd6;
+    --color-svg-tag-bracket-1: #4f4f4f;
+    --color-svg-tag-bracket-2: #808080;
+    --color-svg-txt-1: #a95b3d;
+    --color-svg-txt-2: #ce9178;
     --display-sun: block;
     --display-moon: none;
 }
@@ -21,6 +29,14 @@
         --color-main-border-2: #737373;
         --color-settings-bg: #404040;
         --color-settings-fg: #bfbfbf;
+        --color-svg-attr-1: #9cdcfe;
+        --color-svg-attr-2: #3ab9fd;
+        --color-svg-tag-1: #579dd6;
+        --color-svg-tag-2: #286ca4;
+        --color-svg-tag-bracket-1: #808080;
+        --color-svg-tag-bracket-2: #4f4f4f;
+        --color-svg-txt-1: #ce9178;
+        --color-svg-txt-2: #a95b3d;
         --display-sun: none;
         --display-moon: block;
     }
@@ -433,6 +449,20 @@ details:not([open]) summary ~ * {
 #previewContainer .spacing:before {
     content: none;
 }
+/* #endregion */
+
+/* #region Color */
+.color-red { color: red }
+.color-blue { color: blue }
+.color-green { color: green }
+.color-yellow { color: yellow }
+.color-orange { color: orange }
+.color-purple { color: purple }
+.color-darkviolet { color: darkviolet }
+.color-cyan { color: cyan }
+.color-black { color: black }
+.color-white { color: white }
+
 /* #endregion */
 
 /* #region Settings */

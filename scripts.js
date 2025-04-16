@@ -248,10 +248,10 @@ function showSettings(ele) {
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
         <label class="image svg">${ele.dataset.name} ${ele.dataset.name.toLowerCase() == 'image' ? 'URL' : 'Code'}</label>
-        <textarea class="svg" size="1" value="" oninput="changeSVG(this, this.value != '' ? this.value : '<svg></svg>');">${ele.querySelector('svg') ? formatXML(ele.querySelector('svg').outerHTML) : 'no svg'}</textarea>
         <pre class="svg" contenteditable="true" spellcheck="false" oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>');"></pre>
     `;
-    document.querySelector('#settings pre').innerText = ele.querySelector('svg') ? formatXML(ele.querySelector('svg').outerHTML) : 'no svg';
+    formatXML(document.querySelector('#settings pre'), ele.querySelector('svg') ? ele.querySelector('svg').outerHTML : '<svg></svg>');
+    
     document.querySelectorAll('#settings input').forEach(el => el.size = el.value.length == 0 ? 1 : el.value.length);
     let grid = document.querySelector('#settings div:has(> [value="layout-grid"])');
     if (!grid.style.getPropertyValue('--rows')) {
@@ -292,7 +292,6 @@ function changeEmpty(empty) {
 function changeName(name) {
     editing.dataset.name = name;
     refreshPreview();
-    
 }
 function changeText(text) {
     editing.innerText = text;
@@ -320,11 +319,11 @@ function changeSVG(self, svg) {
         reformat = true;
     }
 
-    console.log(`SVG: ${svg}`);
-    console.log(`Reformat SVG: ${reformat}`);
+    //console.log(`SVG: ${svg}`);
+    //console.log(`Reformat SVG: ${reformat}`);
 
     if (reformat) {
-        self.innerText = formatXML(svg);
+        formatXML(self, svg);
     }
     editing.insertAdjacentHTML('beforeend', svg);
     Array.from(editing.children).forEach(function(child) {
@@ -333,7 +332,7 @@ function changeSVG(self, svg) {
     });
     refreshPreview();
 }
-function formatXML(svgText) {
+function formatXML(container, svgText) {
     // Entferne überflüssige Leerzeichen und neue Zeilen
     svgText = svgText.trim();
 
@@ -350,7 +349,7 @@ function formatXML(svgText) {
         if (trimmedLine === '') {
             continue; // Überspringe leere Zeilen
         }
-        if (trimmedLine.match(/<[^/]/)) {
+        if (trimmedLine.match(/<[^\/]/)) {
             const indent = '  '.repeat(indentLevel);
             indentLevel++;
             indentedLines.push(indent + trimmedLine);
@@ -364,7 +363,32 @@ function formatXML(svgText) {
         }
     }
 
-    return indentedLines.join('\n');
+    container.innerHTML = '';
+    let xml = indentedLines.join('\n');
+    let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
+                      .replace(/<\/(\w+)/g, '</|[$1°tag]|') // Add "[" before and "]" after the closing tag name and add "°" for color attribute
+                      .replace(/(\S+)=/g, '|[$1°attr]|=') // Add "[" before and "]" after the attribute name and add "°" for color attribute
+                      .replace(/"(.+?)"/g, '|["$1"°txt]|') // Add "[" before and "]" after the text and add "°" for color attribute
+                      .replace(/(<\/?|>)/g, '|[$1°tag-bracket]|') // Add "[" before and "]" after the tag brackets and add "°" for color attribute
+                      .split('|'); // Split by "|"
+    //console.log(xmlSplit);
+    let xmlList = [];
+    xmlSplit.forEach(function(item) {
+        if (item.startsWith('[') && item.endsWith(']')) {
+            let ele = document.createElement('span');
+            var itemSplit = item.substring(1, item.length - 1).split('°'); // Remove "[" and "]" and split by "°" for color attribute
+            console.log(itemSplit);
+            ele.innerText = itemSplit[0];
+            ele.style.color = `var(--color-svg-${itemSplit[1]}-1)`;
+            xmlList.push(ele);
+        } else {
+            xmlList.push(document.createTextNode(item)); // Keep the text node as is
+        }
+    });
+
+    xmlList.forEach(function(item) {
+        container.appendChild(item);
+    });
 }
 function changeRows(rows) {
     editing.dataset.rows = rows;
