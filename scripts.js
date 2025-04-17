@@ -247,8 +247,13 @@ function showSettings(ele) {
         </div>
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
+        <span class="image svg switch"><input type="checkbox"></span>
         <label class="image svg">${ele.dataset.name} ${ele.dataset.name.toLowerCase() == 'image' ? 'URL' : 'Code'}</label>
-        <pre class="svg" contenteditable="true" spellcheck="false" oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>');"></pre>
+        <pre class="svg"
+             contenteditable="true"
+             spellcheck="false"
+             oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>'); //restoreSelection(this);"
+             onkeydown="//saveSelection(this)"></pre>
     `;
     formatXML(document.querySelector('#settings pre'), ele.querySelector('svg') ? ele.querySelector('svg').outerHTML : '<svg></svg>');
     
@@ -304,7 +309,7 @@ function changeImage(src) {
 function changeSVG(self, svg) {
     if (editing.querySelector('svg')) editing.querySelector('svg').remove();
     
-    let reformat = !/^<svg.*>\n(\s{2,}<.*>\n\s{2,}<\/.*>\n)*<\/svg>/g.test(svg);
+    let reformat = !checkIndentation(svg, 2);
 
     // Replace stroke and fill colors with currentColor, except "none", white and black
     /* svg = svg.replace(/stroke="(#(?:FFFFFF|ffffff|000000|FFF|fff|000)|white|black|(?!none"))"/g, 'stroke="currentColor"')
@@ -349,46 +354,78 @@ function formatXML(container, svgText) {
         if (trimmedLine === '') {
             continue; // Überspringe leere Zeilen
         }
+        var indent = '';
         if (trimmedLine.match(/<[^\/]/)) {
-            const indent = '  '.repeat(indentLevel);
+            indent = '  '.repeat(indentLevel);
             indentLevel++;
-            indentedLines.push(indent + trimmedLine);
         } else if (trimmedLine.match(/<\//)) {
             indentLevel--;
-            const indent = '  '.repeat(indentLevel);
-            indentedLines.push(indent + trimmedLine);
+            indent = '  '.repeat(indentLevel);
         } else {
-            const indent = '  '.repeat(indentLevel);
-            indentedLines.push(indent + trimmedLine);
+            indent = '  '.repeat(indentLevel);
         }
+        indentedLines.push(indent + trimmedLine);
     }
 
-    container.innerHTML = '';
     let xml = indentedLines.join('\n');
-    let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
+    /* let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
                       .replace(/<\/(\w+)/g, '</|[$1°tag]|') // Add "[" before and "]" after the closing tag name and add "°" for color attribute
                       .replace(/(\S+)=/g, '|[$1°attr]|=') // Add "[" before and "]" after the attribute name and add "°" for color attribute
                       .replace(/"(.+?)"/g, '|["$1"°txt]|') // Add "[" before and "]" after the text and add "°" for color attribute
                       .replace(/(<\/?|>)/g, '|[$1°tag-bracket]|') // Add "[" before and "]" after the tag brackets and add "°" for color attribute
-                      .split('|'); // Split by "|"
+                      .split('|'); */
+    let xmlSplit = xml.replace(/(<\/?)(\w+)|(\S+)=|"(.+?)"/g, function(match, tagStart, tagName, attrName, attrValue) {
+        if (tagName) return `${tagStart}|[${tagName}°tag]|`;
+        if (attrName) return `|[${attrName}°attr]|=`;
+        if (attrValue) return `|["${attrValue}"°txt]|`;
+        if (tagStartBracket) return `|[${tagStartBracket}°tag-bracket]|`;
+        return match;
+    }).replace(/(<\/?|>)/g, '|[$1°tag-bracket]|').split('|');
     //console.log(xmlSplit);
-    let xmlList = [];
+    let fragment = document.createDocumentFragment();
     xmlSplit.forEach(function(item) {
         if (item.startsWith('[') && item.endsWith(']')) {
             let ele = document.createElement('span');
-            var itemSplit = item.substring(1, item.length - 1).split('°'); // Remove "[" and "]" and split by "°" for color attribute
-            console.log(itemSplit);
+            let itemSplit = item.substring(1, item.length - 1).split('°');
             ele.innerText = itemSplit[0];
             ele.style.color = `var(--color-svg-${itemSplit[1]}-1)`;
-            xmlList.push(ele);
+            fragment.appendChild(ele);
         } else {
-            xmlList.push(document.createTextNode(item)); // Keep the text node as is
+            fragment.appendChild(document.createTextNode(item));
         }
     });
-
-    xmlList.forEach(function(item) {
-        container.appendChild(item);
-    });
+    container.innerHTML = '';
+    container.appendChild(fragment);
+}
+function checkIndentation(input, indentSize = 2) {
+    const lines = input.split('\n').filter(line => line.trim() !== '');
+    const stack = [];
+  
+    for (let line of lines) {
+      const trimmed = line.trim();
+      const currentIndent = line.indexOf(trimmed);
+  
+      if (trimmed.startsWith('</')) {
+        // Schließendes Tag → eine Ebene zurück
+        if (stack.length === 0) return false;
+        const expectedIndent = stack.pop();
+        if (currentIndent !== expectedIndent) return false;
+      } else if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+        // Öffnendes Tag → neue Ebene
+        if (stack.length > 0 && currentIndent !== stack[stack.length - 1] + indentSize) {
+          return false;
+        } else if (stack.length === 0 && currentIndent !== 0) {
+          return false;
+        }
+        stack.push(currentIndent);
+      } else {
+        // Zeile ist kein Tag → ignorieren oder Fehler
+        return false;
+      }
+    }
+  
+    // Stack muss leer sein, sonst sind Tags nicht korrekt geschlossen
+    return stack.length === 0;
 }
 function changeRows(rows) {
     editing.dataset.rows = rows;
@@ -463,7 +500,47 @@ function removeElement() {
 
 
 
-//#region Theme switcher
+// #region Selection
+var savedRange, savedNodePosition, isInFocus;
+function saveSelection(el) {
+    if (window.getSelection) { //non IE Browsers
+        savedRange = window.getSelection().getRangeAt(0);
+        let selection = window.getSelection();
+        let index = Array.prototype.indexOf.call(el.childNodes, selection.focusNode.parentNode);
+        savedNodePosition = [index, selection.getRangeAt(0)];
+        console.log(savedNodePosition);
+    }
+    else if (document.selection) { //IE
+        savedRange = document.selection.createRange();
+    }
+}
+
+function restoreSelection(el) {
+    isInFocus = true;
+    //console.log(el.childNodes[savedNodePosition[0]]);
+    el.childNodes[savedNodePosition[0]].focus();
+    if (savedNodePosition != null) {
+        if (window.getSelection) { //non IE and there is already a selection
+            var s = window.getSelection();
+            console.log(s);
+            if (s.rangeCount > 0) s.removeAllRanges();
+            s.addRange(savedNodePosition[1]);
+        }
+        else if (document.createRange) { //non IE and no selection
+            window.getSelection().addRange(savedRange);
+        }
+        else if (document.selection) { //IE
+            savedRange.select();
+        }
+    }
+}
+// #endregion
+
+
+
+
+
+// #region Theme switcher
 function changeTheme() {
     Object.entries(colorVariables).forEach(([key, val]) => {
         var var1 = getComputedStyle(document.documentElement).getPropertyValue(key)
@@ -495,8 +572,6 @@ if (userTheme != currentTheme) {
     changeTheme();
 }
 //#endregion
-
-
 
 
 
