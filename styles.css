@@ -210,6 +210,10 @@ details:not([open]) summary ~ * {
     outline: solid 2px var(--color-editing-outline) !important;
     z-index: 99 !important;
 }
+.center-vertical {
+    display: flex;
+    align-content: center;
+}
 .field {
     display: block;
     width: auto;
@@ -254,24 +258,26 @@ details:not([open]) summary ~ * {
     flex-wrap: nowrap;
 }
 .switch {
+    --display: inline-block;
     position: relative;
     width: 3em;
     height: 1.5em;
+    margin: 0 0.5em;
     border-radius: 100vw;
-    background-color: aliceblue;
+    background-color: var(--color-main-fg);
 }
 .switch:before {
     content: "";
     position: absolute;
     height: 75%;
     aspect-ratio: 1;
-    margin: 12.5%;
+    border: solid 0.2em var(--color-main-fg);
     border-radius: 100vw;
     background-color: var(--color-main-bg);
-    transition: transform 0.5s;
+    transition: transform 0.25s;
 }
 .switch:has(input:checked):before {
-    transform: translateX(2em);
+    transform: translateX(1.5em);
 }
 .switch input {
     position: absolute;
@@ -758,7 +764,7 @@ details:not([open]) summary ~ * {
 #settings:has(~ #structureWrapper .editing[data-name="Text"]) .text,
 #settings:has(~ #structureWrapper .editing[data-name="Image"]) .image,
 #settings:has(~ #structureWrapper .editing[data-name="SVG"]) .svg {
-    display: block;
+    display: var(--display, block);
 }
 #settings:has(input[value="layout-grid"]:checked) .orientation {
     display: none !important;

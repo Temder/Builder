@@ -247,7 +247,7 @@ function showSettings(ele) {
         </div>
         <label class="text">Text</label>
         <input class="text" size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
-        <span class="image svg switch"><input type="checkbox"></span>
+        <label class="center-vertical">SVG<span class="image svg switch"><input type="checkbox" onclick="if (this.checked) { editing.dataset.name = 'Image' } else { editing.dataset.name = 'SVG' }" ${ele.dataset.name == 'Image' ? 'checked' : ''} /></span>Image</label>
         <label class="image svg">${ele.dataset.name} ${ele.dataset.name.toLowerCase() == 'image' ? 'URL' : 'Code'}</label>
         <pre class="svg"
              contenteditable="true"
