@@ -626,6 +626,9 @@ details:not([open]) summary ~ * {
 #settings > div:first-of-type {
     width: 100%;
 }
+#settings > label {
+    margin-top: 1em;
+}
 #settings h2 {
     background-color: var(--color-main-bg);
     width: 100%;
