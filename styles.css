@@ -3,11 +3,11 @@
     --color-element-hover-1: #00000030;
     --color-element-hover-2: #ffffff30;
     --color-main-bg: #ffffff;
-    --color-main-fg: #1a1a1a;
+    --color-main-fg: #2a2a2a;
     --color-main-border-1: #737373;
     --color-main-border-2: #8c8c8c;
     --color-settings-bg: #bfbfbf;
-    --color-settings-fg: #404040;
+    --color-settings-fg: #4a4a4a;
     --color-svg-attr-1: #3ab9fd;
     --color-svg-attr-2: #9cdcfe;
     --color-svg-tag-1: #286ca4;
@@ -21,7 +21,7 @@
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-element-hover-1: #ffffff30;
+        /*--color-element-hover-1: #ffffff30;
         --color-element-hover-2: #00000030;
         --color-main-bg: #1a1a1a;
         --color-main-fg: #ffffff;
@@ -38,7 +38,7 @@
         --color-svg-txt-1: #ce9178;
         --color-svg-txt-2: #a95b3d;
         --display-sun: none;
-        --display-moon: block;
+        --display-moon: block;*/
     }
 }
 * {
@@ -70,8 +70,6 @@ details {
     border: 1px solid var(--color-settings-fg);
     border-radius: 4px;
     padding: 0.5em 0.5em 0;
-    margin-bottom: 1em;
-    /* transition: max-height 1s; */
 }
 details[open] {
     padding: 0.5em;
@@ -105,6 +103,15 @@ details[open] summary {
 details[open] summary:before {
     transform: rotate(90deg);
 }
+pre {
+    margin: 0;
+}
+select {
+    background-color: var(--color-main-bg);
+    color: var(--color-main-fg);
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
+}
 textarea {
     width: 100%;
     height: 20em;
@@ -115,24 +122,34 @@ textarea {
     color: var(--color-main-fg);
     resize: vertical;
 }
-/* details summary ~ * {
-    transition: transform .5s;
-}
-details[open] summary ~ * {
-    transform: translateY(0);
-}
-details:not([open]) summary ~ * {
-    transform: translateY(-100%);
-} */
 #elementsContainer {
-    margin: 0.5em 0 3em !important;
-    gap: 1em;
+    position: relative;
+    flex-direction: column;
+    margin: 2em 2em 3em 0.5em !important;
+    gap: 2em;
+}
+#elementsContainer:before {
+    content: "Elements";
+    position: absolute;
+    left: 0;
+    top: -2em;
+    pointer-events: none;
+    font-weight: bold;
 }
 #elementsContainer > div {
     text-align: center;
+    border: solid 1px var(--color-main-border-2);
+    border-bottom: none;
+    border-top-left-radius: 0.5em;
+    border-top-right-radius: 0.5em;
+}
+#elementsContainer > div:hover,
+#elementsContainer > div:hover:after {
+    background-color: var(--color-element-hover-1);
 }
 #structureContainer,
-#previewContainer {
+#previewContainer,
+#outputContainer {
     --height: 20em;
     --padding: 0.5em;
     position: relative;
@@ -145,20 +162,38 @@ details:not([open]) summary ~ * {
     padding: 0.5em;
     flex-wrap: wrap;
 }
-#structureContainer:before {
-    content: "Structure Builder";
+#structureContainer:before,
+#previewContainer:before,
+#outputContainer #html:before,
+#outputContainer #css:before {
     position: absolute;
     left: 0;
     top: -2em;
     padding: 0.25em;
     pointer-events: none;
 }
+#structureContainer:before {
+    content: "Structure Builder";
+}
 #previewContainer:before {
     content: "Preview";
-    position: absolute;
-    left: 0;
-    top: -2em;
-    padding: 0.25em;
+}
+#outputContainer #html:before {
+    content: "Output HTML";
+}
+#outputContainer #css:before {
+    content: "Output CSS";
+}
+#outputContainer {
+    gap: 1em;
+    padding: 0;
+    border: none;
+}
+#outputContainer > div {
+    position: relative;
+    width: calc(50% - 0.5em);
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
 }
 #structureContainer,
 #structureContainer *:not(.nothing) {
@@ -194,7 +229,6 @@ details:not([open]) summary ~ * {
 #structureContainer .layout-grid:has(.field) .structure-item {
     display: none;
 }
-#elementsContainer .container,
 #structureContainer .container {
     outline: solid 1px var(--color-main-border-1);
 }
@@ -212,7 +246,7 @@ details:not([open]) summary ~ * {
 }
 .center-vertical {
     display: flex;
-    align-content: center;
+    align-items: center;
 }
 .field {
     display: block;
@@ -234,9 +268,20 @@ details:not([open]) summary ~ * {
     min-height: 3em;
 }
 .flex  {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 1em;
+    display: var(--display, flex);
+    flex-wrap: var(--wrap, wrap);
+    flex-direction: var(--direction, row);
+    gap: var(--gap);
+}
+.float-left {
+    float: left;
+}
+.grid {
+    display: var(--grid, grid);
+    grid-template-columns: repeat(var(--cols), auto);
+    grid-template-rows: repeat(var(--rows), auto);
+    grid-auto-flow: column;
+    gap: var(--gap);
 }
 .nothing {
     position: absolute;
@@ -258,7 +303,7 @@ details:not([open]) summary ~ * {
     flex-wrap: nowrap;
 }
 .switch {
-    --display: inline-block;
+    display: inline-block;
     position: relative;
     width: 3em;
     height: 1.5em;
@@ -289,6 +334,16 @@ details:not([open]) summary ~ * {
     opacity: 0;
 }
 .togglebutton {
+    position: relative;
+    width: 2em;
+    height: 2em;
+    border-radius: 0.5em;
+    background-color: var(--color-main-bg);
+    text-align: center;
+    align-content: center;
+    cursor: pointer;
+}
+.togglebutton input {
     position: absolute;
     top: 0;
     left: 0;
@@ -297,26 +352,7 @@ details:not([open]) summary ~ * {
     margin: 0;
     opacity: 0;
 }
-*:has( > .togglebutton) {
-    position: relative;
-    width: 2em;
-    height: 2em;
-    margin-right: 0.5em;
-    text-align: center;
-    align-content: center;
-}
-*:has( > .togglebutton):before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0.5em;
-    background-color: var(--color-main-bg);
-    z-index: -1;
-}
-*:has( > .togglebutton:checked):before {
+.togglebutton:has( > input:checked) {
     background-color: var(--color-main-border-2);
 }
 /* #endregion */
@@ -338,6 +374,7 @@ details:not([open]) summary ~ * {
     max-height: var(--max-height);
     padding: var(--padding);
     margin: var(--margin);
+    font-family: var(--font-family);
     font-size: var(--font-size);
     font-weight: var(--font-weight);
     font-style: var(--font-style);
@@ -358,20 +395,33 @@ details:not([open]) summary ~ * {
     bottom: 0;
     transform: translate(-50%, 100%);
     pointer-events: all;
-    padding-top: 0.5em;
+    padding-top: 0;
+    padding-bottom: 0.25em;
+    border: solid 1px var(--color-main-border-2);
+    border-top: none;
+    border-bottom-left-radius: 0.5em;
+    border-bottom-right-radius: 0.5em;
 }
 #elementsContainer *[id^=element][data-name="Image"]:after,
 #elementsContainer *[id^=element][data-name="SVG"]:after {
     content: "Image/SVG";
+}
+#element1:before {
+    content: "";
+    width: 100%;
+    height: 100%;
+    border: solid 1px var(--color-main-border-1);
+    margin: auto;
 }
 #element2:before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 1em);
+    height: calc(100% - 1em);
     padding: 0;
+    margin: 0.5em;
     background-color: var(--color-spacing);
     clip-path: polygon(0% 41%, 4% 41%, 4% 48%, 48% 48%, 48% 4%, 41% 4%, 41% 0%, 59% 0%, 59% 4%, 52% 4%, 52% 48%, 96% 48%, 96% 41%, 100% 41%, 100% 59%, 96% 59%, 96% 52%, 52% 52%, 52% 96%, 59% 96%, 59% 100%, 41% 100%, 41% 96%, 48% 96%, 48% 52%, 4% 52%, 4% 59%, 0% 59%, 0% 100%, 100% 100%, 100% 140%, 0% 140%);
 }
@@ -505,29 +555,37 @@ details:not([open]) summary ~ * {
     display: flex;
     position: fixed;
     flex-direction: column;
+    gap: 0.5em;
     top: 0;
     right: 0;
     width: 50%;
     height: calc(100% - 2em);
-    padding: 0 1em;
+    padding: 1em 1em 0;
     margin: 1em 0;
     background-color: var(--color-settings-bg);
     transform: translateX(110%);
     transition: transform 0.75s;
+    border-top: solid 2px var(--color-main-border-1);
+    border-left: solid 2px var(--color-main-border-1);
+    border-bottom: solid 2px var(--color-main-border-1);
     border-top-left-radius: 0.5em;
+    overflow: auto;
     z-index: 100;
 }
 #settings:before {
-    content: url("./graphics/close.svg");
+    content: "hallo";/*url("./graphics/close.svg");*/
     position: absolute;
-    bottom: 0;
-    left: -3em;
+    bottom: -2px;
+    left: -3.1em;
     width: 2em;
     height: 2em;
     padding: 0.5em;
     background-color: inherit;
     border-radius: 0.5em 0 0 0.5em;
     pointer-events: none;
+    border-top: solid 2px var(--color-main-border-1);
+    border-left: solid 2px var(--color-main-border-1);
+    border-bottom: solid 2px var(--color-main-border-1);
 }
 #settings:after {
     content: "";
@@ -538,6 +596,23 @@ details:not([open]) summary ~ * {
     height: 1em;
     border-bottom-right-radius: 1em;
     box-shadow: 3px 3px 0 3px var(--color-settings-bg);
+    border-right: solid 2px var(--color-main-border-1);
+    border-bottom: solid 2px var(--color-main-border-1);
+    box-sizing: border-box;
+}
+#settings:has(~ #structureWrapper > .editing) #remove {
+    display: none;
+} 
+#settings:has(~ #structureWrapper .editing) {
+    transform: translateX(0);
+}
+#settings > div:first-of-type {
+    gap: 1em;
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+#settings > label {
+    margin-top: 0.5em;
 }
 #settings #dimensions {
     --width: 10em;
@@ -607,34 +682,44 @@ details:not([open]) summary ~ * {
 #settings #dimensions input:nth-of-type(4) { --translateY: 190% }
 #settings #dimensions input:nth-of-type(4) + span { --translateY: 85% }
 #settings #remove {
-    width: 4em;
-    height: 4em;
+    height: 100%;
     padding: 0;
-    margin: 1.5rem 1.5rem 1rem;
-    margin-left: 0;
+    margin: auto;
+    border: none;
+    border-radius: 0.5em;
     line-height: 0;
+    aspect-ratio: 1;
+    cursor: pointer;
+    background-color: var(--color-main-bg);
 }
-#settings:has(~ #structureWrapper > .editing) #remove {
-    display: none;
-} 
-#settings:has(~ #structureWrapper .editing) {
-    transform: translateX(0);
+#settings #remove img {
+    margin: 0.3em;
 }
-#settings > div {
-    margin: 0.5em 0 1em;
+#settings #remove:hover {
+    background-color: var(--color-element-hover-1);
 }
-#settings > div:first-of-type {
-    width: 100%;
+#settings #remove:active {
+    background-color: var(--color-element-hover-2);
 }
-#settings > label {
-    margin-top: 1em;
+#settings #remove:not(:hover) {
+    background-color: var(--color-main-bg);
 }
 #settings h2 {
     background-color: var(--color-main-bg);
     width: 100%;
     padding: 0.5em;
-    margin: 1.5rem 0 1rem;
+    margin: 0;
     border-radius: 0.2em;
+}
+#settings input {
+    text-align: center;
+    border: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
+    background-color: var(--color-main-bg);
+    color: var(--color-main-fg);
+}
+#settings label {
+    display: block;
 }
 #settings pre {
     padding: 1em;
@@ -645,54 +730,30 @@ details:not([open]) summary ~ * {
     overflow-x: auto;
     resize: vertical;
 }
-#settings div:has(> input[type="radio"]) {
+#settings .multi-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
+#settings .multi-switch > div {
+    position: relative;
     width: 6em;
     aspect-ratio: 1;
     outline: solid 1px var(--color-main-border-1);
+    border-radius: 0.5em;
 }
-#settings .layout div:has(> input:checked) {
+#settings .multi-switch div:has(> input:checked) {
     outline: solid 2px var(--color-editing-outline);
 }
-#settings div:has(> [type="radio"]) {
-    display: flex;
-}
-#settings div:has(> [value="layout-vertical"]) {
-    flex-direction: column;
-}
-#settings div:has(> [value="layout-grid"]) {
+#settings .multi-switch div:has(> [value="layout-grid"]) {
     display: grid;
     grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
     grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
 }
-#settings div:has(> [value="layout-grid"]) div {
+#settings .multi-switch div:has(> [value="layout-grid"]) div {
     margin: 12% !important;
 }
-#settings input {
-    text-align: center;
-    border: solid 1px var(--color-main-border-1);
-    border-radius: 0.5em;
-    background-color: var(--color-main-bg);
-    color: var(--color-main-fg);
-}
-#settings input[type="radio"] ~ div {
-    flex: 1;
-    margin: 7.5%;
-    background-color: #fff;
-    border-radius: 0.5em;
-}
-#settings div.layout {
-    padding: 0;
-}
-#settings div.layout > div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
-}
-#settings div.layout > div > div {
-    position: relative;
-    border-radius: 0.5em;
-}
-#settings div.layout input:first-of-type {
+#settings .multi-switch input:first-of-type {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -700,64 +761,56 @@ details:not([open]) summary ~ * {
     opacity: 0;
     cursor: pointer;
 }
-#settings div.layout input[type="number"] {
+#settings .multi-switch input[type="radio"] ~ div {
+    flex: 1;
+    margin: 4.5%;
+    background-color: #fff;
+    border-radius: 0.5em;
+}
+#settings .multi-switch input[type="number"] {
     display: none;
     position: absolute;
 }
-#settings div.layout input:checked ~ input[type="number"] {
+#settings .multi-switch input:checked ~ input[type="number"] {
     display: block;
 }
-#settings div.layout input[type="number"]:not(:first-of-type):not(:last-of-type) {
+#settings .multi-switch input[type="number"]:not(:first-of-type):not(:last-of-type) {
     right: 0;
     top: 50%;
     transform: translate(115%, -50%);
 }
-#settings div.layout input[type="number"]:last-of-type {
+#settings .multi-switch input[type="number"]:last-of-type {
     top: 0;
     left: 50%;
     transform: translate(-50%, -125%);
 }
-#settings .orientation {
-    width: min-content;
-}
-#settings .orientation > div {
+#settings .multi-switch.orientation > div {
     flex-wrap: nowrap !important;
-    gap: 0.5em !important;
-}
-#settings .orientation > div > div {
+    gap: 0.1em !important;
     width: 2em;
     height: 2em;
 }
-#settings .orientation [value^="horizontal"] ~ div {
+#settings .multi-switch.orientation [value^="horizontal"] ~ div {
     flex: unset;
     width: 5px;
 }
-#settings .orientation [value^="vertical"] ~ div {
+#settings .multi-switch.orientation [value^="vertical"] ~ div {
     flex: unset;
     height: 5px;
 }
-#settings .orientation div:has(> [value$="center"]) {
+#settings .multi-switch.orientation div:has(> [value$="center"]) {
     justify-content: center;
 }
-#settings .orientation div:has(> [value$="end"]) {
+#settings .multi-switch.orientation div:has(> [value$="end"]) {
     justify-content: end;
 }
-#settings .orientation div:has(> [value^="vertical"]) {
-    flex-direction: column;
-}
-#settings .orientation div:has(> [value^="horizontal"][value$="end"]) {
+#settings .multi-switch.orientation div:has(> [value^="horizontal"][value$="end"]) {
     margin-right: 1em;
 }
 #settings label + input {
     width: min-content;
-    margin: 0.5em 0;
-}
-#settings select.type {
-    width: min-content;
-    margin: 0.5em 0;
 }
 #settings .layout,
-#settings .type,
 #settings .text,
 #settings .image,
 #settings .svg {
