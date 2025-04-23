@@ -1,14 +1,19 @@
+let colorPicker = document.getElementById('colorPicker');
+let colorKnob = document.getElementById('colorKnob');
 let elements = document.querySelectorAll('#elementsContainer .element');
 let outputHTMLContainer = document.getElementById('html');
 let outputCSSContainer = document.getElementById('css');
 let previewContainer = document.getElementById('previewContainer');
 let settings = document.getElementById('settings');
 let structureContainer = document.getElementById('structureContainer');
+let currentDistance = null;
 let draggingElement = null;
-let structureItem = null;
 let editing = null;
 let nearestField = null;
 let rowSelect = null;
+let setCurrentDistance = true;
+let setOnce = false;
+let structureItem = null;
 const cssVariables = ['width', 'height', 'margin', 'padding'];
 const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
                       'horizontal-start','horizontal-center', 'horizontal-end',
@@ -18,10 +23,26 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
         let lastEdited = structureContainer.parentElement.querySelector('.editing')
-        if (lastEdited) lastEdited.classList.remove('editing');
+        if (lastEdited) {
+            lastEdited.classList.remove('editing');
+            document.body.appendChild(colorPicker.parentElement);
+            colorPicker.parentElement.style.display = 'none';
+        }
         if (structureContainer.contains(event.target) && event.target != lastEdited) {
             event.target.classList.add('editing');
             showSettings(event.target);
+        }
+    }
+}
+document.onkeydown = function(event) {
+    setCurrentDistance = false;
+}
+document.onkeyup = function(event) {
+    setOnce = true;
+    if (event.key == 'Control') {
+        if (setOnce) {
+            setCurrentDistance = true;
+            setOnce = false;
         }
     }
 }
@@ -41,6 +62,160 @@ elements.forEach(element => {
         }
     });
 });
+
+//#region Color picker
+function createColorPicker(width = 200, height = 200) {
+    //const colorDisplay = document.getElementById('colorDisplay');
+    let ctx = colorPicker.getContext('2d');
+
+    colorPicker.width = width;
+    colorPicker.height = height;
+    colorPicker.parentElement.style.width = `${width}px`;
+    colorPicker.parentElement.style.height = `${height}px`;
+    colorKnob.style.width = `${width / 4}px`;
+    colorKnob.style.height = `${height / 4}px`;
+
+    let rect, centerX, centerY, radius;
+
+    function updateGeometry() {
+        rect = colorPicker.getBoundingClientRect();
+        centerX = rect.width / 2;
+        centerY = rect.height / 2;
+        radius = Math.min(centerX, centerY);
+    }
+
+    // Call updateGeometry initially
+    updateGeometry();
+
+    // Draw the color wheel
+    for (let angle = 0; angle < 360; angle++) {
+        let startAngle = (angle - 2) * Math.PI / 180;
+        let endAngle = angle * Math.PI / 180;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius - 1, startAngle, endAngle);
+        ctx.closePath();
+
+        let hue = angle;
+        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.fill();
+    }
+
+    const radialGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    radialGradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    radialGradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
+    radialGradient.addColorStop(0.35, 'rgba(255, 255, 255, 1)');
+    radialGradient.addColorStop(0.6, 'rgba(255, 255, 255, 0)');
+    radialGradient.addColorStop(0.8, 'rgba(128, 128, 128, 0)');
+    radialGradient.addColorStop(0.95, 'rgba(0, 0, 0, 1)');
+    radialGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = radialGradient;
+    ctx.fill();
+
+    let isDragging = false;
+    let currentX = centerX;
+    let currentY = centerY;
+
+    colorKnob.style.left = centerX + 'px';
+    colorKnob.style.top = centerY + 'px';
+
+    function updateColor(x, y) {
+        let pixel = ctx.getImageData(x, y, 1, 1).data;
+        let colorRGB = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        let colorHex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+        //colorDisplay.textContent = `Selected Color: ${rgbToHex(pixel[0], pixel[1], pixel[2])}`;
+        //colorDisplay.style.color = color;
+        colorKnob.style.backgroundColor = colorRGB;
+        colorKnob.dataset[colorPicker.parentElement.parentElement.name] = colorHex;
+        changeProperty(colorKnob);
+        /*document.documentElement.style.setProperty('--color-main-bg-custom', color);
+        background.color = color;
+        localStorage.setItem('background', JSON.stringify(background));
+
+        const luminance = getLuminance(pixel[0], pixel[1], pixel[2]);
+        const changeTo = luminance < 0.5 ? 'dark' : 'light';
+        if (changeTo != currentTheme) {
+            currentTheme = changeTo;
+            changeTheme();
+        }
+        document.body.style.backgroundColor = color;*/
+        //document.documentElement.style.setProperty('--color-main-fg', textColor);
+    }
+
+    function handleKnobPosition(e) {
+        updateGeometry(); // Recalculate geometry dynamically
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+
+        let dx = x - centerX;
+        let dy = y - centerY;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let angle = Math.atan2(dy, dx);
+        if (setCurrentDistance) {
+            currentDistance = distance;
+        }
+        let constrainedDistance = Math.min(currentDistance ? currentDistance : distance, radius - 2);
+
+        currentX = centerX + constrainedDistance * Math.cos(angle);
+        currentY = centerY + constrainedDistance * Math.sin(angle);
+
+        requestAnimationFrame(updateUI);
+    }
+
+    function updateUI() {
+        colorKnob.style.left = currentX + 'px';
+        colorKnob.style.top = currentY + 'px';
+        updateColor(currentX, currentY);
+    }
+
+    colorKnob.addEventListener('pointerdown', () => isDragging = true, { passive: true });
+    colorPicker.addEventListener('pointerdown', () => isDragging = true, { passive: true });
+    document.addEventListener('pointermove', (e) => {
+        if (isDragging) {
+            handleKnobPosition(e);
+        }
+    }, { passive: true });
+
+    document.addEventListener('pointerup', () => isDragging = false, { passive: true });
+
+    colorPicker.addEventListener('click', (e) => {
+        if (e.target !== colorKnob) {
+            handleKnobPosition(e);
+        }
+    }, { passive: true });
+
+    function rgbToHex(r, g, b) {
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    }
+
+    // Add fallback for pointer events
+    if (!window.PointerEvent) {
+        colorKnob.addEventListener('mousedown', () => isDragging = true);
+        colorKnob.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', handleMove);
+        
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('touchend', () => isDragging = false);
+    }
+
+    updateColor(currentX, currentY);
+    colorPicker.parentElement.style.display = 'none';
+}
+createColorPicker(150, 150);
+//#endregion
+
+
+
+
 
 // #region Dragging
 function dragStart(event) {
@@ -269,9 +444,17 @@ function showSettings(ele) {
              spellcheck="false"
              oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>'); //restoreSelection(this);"
              onkeydown="//saveSelection(this)"></pre>
+        <div class="grid" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
+            <label>Background color</label>
+            <div name="backgroundColor" style="width: 100%; height: 5em; background-color: gray;" onmouseover="this.appendChild(colorPicker.parentElement); colorPicker.parentElement.style.display = 'block';"></div>
+            <!--<input type="color" name="backgroundColor" value="${ele.dataset.backgroundColor ? ele.dataset.backgroundColor : 'transparent'}" oninput="changeProperty(this);">-->
+            <label>Text color</label>
+            <div name="color" style="width: 100%; height: 5em; background-color: gray;" onmouseover="this.appendChild(colorPicker.parentElement); colorPicker.parentElement.style.display = 'block';"></div>
+            <!--<input type="color" name="color" value="${ele.dataset.color ? ele.dataset.color : '#000000'}" oninput="changeProperty(this);">-->
+        </div>
     `;
     formatXML(document.querySelector('#settings pre'), ele.querySelector('svg') ? ele.querySelector('svg').outerHTML : '<svg></svg>');
-    
+
     document.querySelectorAll('#settings input').forEach(el => el.size = el.value.length == 0 ? 1 : el.value.length);
     let grid = document.querySelector('#settings div:has(> [value="layout-grid"])');
     if (!grid.style.getPropertyValue('--rows')) {
@@ -283,6 +466,7 @@ function showSettings(ele) {
     grid.insertAdjacentHTML('beforeend', '<div></div>'.repeat(grid.style.getPropertyValue('--rows') * grid.style.getPropertyValue('--cols')))
 }
 function changeProperty(self) {
+    if (editing == null) return;
     var property;
     var value;
     if (self.tagName == 'SELECT') {
@@ -291,6 +475,9 @@ function changeProperty(self) {
         });
         property = self.value;
         value = self.options[self.selectedIndex].text;
+    } else if (self == colorKnob) {
+        property = 'color';
+        value = self.dataset.color;
     } else {
         property = self.name;
         value = self.value;

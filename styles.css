@@ -379,6 +379,8 @@ textarea {
     font-weight: var(--font-weight);
     font-style: var(--font-style);
     text-decoration: var(--text-decoration);
+    background-color: var(--background-color);
+    color: var(--color);
 }
 *[id^=element]:not(#elementsContainer) {
     position: relative;
@@ -550,6 +552,50 @@ textarea {
 
 /* #endregion */
 
+/* #region Color picker */
+.colorPicker {
+    position: relative;
+    margin: 1em;
+    border-radius: 50%;
+    overflow: visible;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+#colorPicker {
+    border-radius: 50%;
+    /*outline: 2px solid var(--color-main-fg);*/
+}
+.knob {
+    position: absolute;
+    border: 2px solid white;
+    border-radius: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    pointer-events: all;
+    z-index: 1;
+    touch-action: none;
+}
+.knob:after {
+    content: attr(data-color);
+    position: absolute;
+    top: 50%;
+    left: 110%;
+    transform: translateY(-50%);
+    padding: 0.25em;
+    font-size: 1.5em;
+    -webkit-text-stroke: 0.3em var(--color-main-bg);
+    paint-order: stroke fill;
+}
+.colorDisplay {
+    margin-top: 20px;
+    font-size: 1.2em;
+}
+/* #endregion */
+
 /* #region Settings */
 #settings {
     display: flex;
@@ -569,11 +615,10 @@ textarea {
     border-left: solid 2px var(--color-main-border-1);
     border-bottom: solid 2px var(--color-main-border-1);
     border-top-left-radius: 0.5em;
-    overflow: auto;
     z-index: 100;
 }
 #settings:before {
-    content: "hallo";/*url("./graphics/close.svg");*/
+    content: url("./graphics/close.svg");
     position: absolute;
     bottom: -2px;
     left: -3.1em;
