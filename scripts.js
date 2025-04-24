@@ -130,7 +130,8 @@ function createColorPicker(width = 200, height = 200) {
         //colorDisplay.textContent = `Selected Color: ${rgbToHex(pixel[0], pixel[1], pixel[2])}`;
         //colorDisplay.style.color = color;
         colorKnob.style.backgroundColor = colorRGB;
-        colorKnob.dataset[colorPicker.parentElement.parentElement.name] = colorHex;
+        colorKnob.dataset[colorPicker.parentElement.parentElement.getAttribute('name')] = colorHex;
+        console.log(colorKnob.dataset[colorPicker.parentElement.parentElement.getAttribute('name')]);
         changeProperty(colorKnob);
         /*document.documentElement.style.setProperty('--color-main-bg-custom', color);
         background.color = color;
