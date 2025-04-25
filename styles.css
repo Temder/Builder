@@ -171,6 +171,7 @@ textarea {
     top: -2em;
     padding: 0.25em;
     pointer-events: none;
+    color: var(--color-main-fg);
 }
 #structureContainer:before {
     content: "Structure Builder";
@@ -198,7 +199,7 @@ textarea {
 #structureContainer,
 #structureContainer *:not(.nothing) {
     position: relative;
-    background-color: initial;
+    /*background-color: initial;*/
     box-shadow: inset 0 0 0 var(--padding, 0) var(--color-padding), 0 0 0 var(--margin, 0) var(--color-margin);
 }
 
@@ -223,7 +224,7 @@ textarea {
 }
 #structureContainer:hover *:not(.nothing),
 #structureContainer *:hover *:not(.nothing) {
-    background-color: var(--color-main-bg);
+    background-color: var(--background-color, --color-main-bg);
     z-index: 1;
 }
 #structureContainer .layout-grid:has(.field) .structure-item {
@@ -363,9 +364,15 @@ textarea {
 }
 /* .text {}
 .spacing {}
-.svg {}
-.image {} */
+.svg {} */
+.image svg {
+    max-height: 100%;
+}
+.image img {
+    width: auto;
+}
 .element {
+    --background-color: var(--color-main-bg);
     width: var(--width);
     min-width: var(--min-width);
     max-width: var(--max-width);
@@ -379,8 +386,11 @@ textarea {
     font-weight: var(--font-weight);
     font-style: var(--font-style);
     text-decoration: var(--text-decoration);
-    background-color: var(--background-color);
+    background-color: var(--background-color, initial);
     color: var(--color);
+}
+#previewContainer .element {
+    --background-color: transparent;
 }
 *[id^=element]:not(#elementsContainer) {
     position: relative;
@@ -580,7 +590,7 @@ textarea {
     touch-action: none;
 }
 .knob:after {
-    content: attr(data-color);
+    content: attr(data-css-color);
     position: absolute;
     top: 50%;
     left: 110%;
@@ -589,6 +599,7 @@ textarea {
     font-size: 1.5em;
     -webkit-text-stroke: 0.3em var(--color-main-bg);
     paint-order: stroke fill;
+    color: var(--color-main-fg);
 }
 .colorDisplay {
     margin-top: 20px;
@@ -748,6 +759,17 @@ textarea {
 }
 #settings #remove:not(:hover) {
     background-color: var(--color-main-bg);
+}
+#settings div[name=backgroundColor],
+#settings div[name=color] {
+    position: relative;
+    width: min-content;
+    height: min-content;
+    min-width: 5em;
+    min-height: 5em;
+    border-radius: 0.5em;
+    background-color: var(--color-element-hover-1);
+    color: white;
 }
 #settings h2 {
     background-color: var(--color-main-bg);

@@ -14,7 +14,7 @@ let rowSelect = null;
 let setCurrentDistance = true;
 let setOnce = false;
 let structureItem = null;
-const cssVariables = ['width', 'height', 'margin', 'padding'];
+const cssVariables = ['width', 'height', 'margin', 'padding', 'background-color', 'color', 'font-size', 'font-family', 'font-weight', 'font-style', 'text-decoration',];
 const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
                       'horizontal-start','horizontal-center', 'horizontal-end',
                       'vertical-start',  'vertical-center',   'vertical-end'
@@ -22,7 +22,7 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
 
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
-        let lastEdited = structureContainer.parentElement.querySelector('.editing')
+        let lastEdited = structureContainer.parentElement.querySelector('.editing');
         if (lastEdited) {
             lastEdited.classList.remove('editing');
             document.body.appendChild(colorPicker.parentElement);
@@ -64,154 +64,202 @@ elements.forEach(element => {
 });
 
 //#region Color picker
-function createColorPicker(width = 200, height = 200) {
-    //const colorDisplay = document.getElementById('colorDisplay');
-    let ctx = colorPicker.getContext('2d');
+class ColorPicker {
+    constructor(width = 200, height = 200, colorPickerId, colorKnobId) {
+        this.width = width;
+        this.height = height;
+        this.colorPicker = document.getElementById(colorPickerId);
+        this.colorKnob = document.getElementById(colorKnobId);
+        this.ctx = this.colorPicker.getContext('2d');
+        this.centerX = 0;
+        this.centerY = 0;
+        this.radius = 0;
+        this.currentX = 0;
+        this.currentY = 0;
+        this.currentDistance = null;
+        this.isDragging = false;
+        this.name = null;
 
-    colorPicker.width = width;
-    colorPicker.height = height;
-    colorPicker.parentElement.style.width = `${width}px`;
-    colorPicker.parentElement.style.height = `${height}px`;
-    colorKnob.style.width = `${width / 4}px`;
-    colorKnob.style.height = `${height / 4}px`;
-
-    let rect, centerX, centerY, radius;
-
-    function updateGeometry() {
-        rect = colorPicker.getBoundingClientRect();
-        centerX = rect.width / 2;
-        centerY = rect.height / 2;
-        radius = Math.min(centerX, centerY);
+        this.initialize();
     }
 
-    // Call updateGeometry initially
-    updateGeometry();
+    initialize() {
+        this.colorPicker.width = this.width;
+        this.colorPicker.height = this.height;
+        this.colorPicker.parentElement.style.width = `${this.width}px`;
+        this.colorPicker.parentElement.style.height = `${this.height}px`;
+        this.colorKnob.style.width = `${this.width / 4}px`;
+        this.colorKnob.style.height = `${this.height / 4}px`;
 
-    // Draw the color wheel
-    for (let angle = 0; angle < 360; angle++) {
-        let startAngle = (angle - 2) * Math.PI / 180;
-        let endAngle = angle * Math.PI / 180;
+        this.updateGeometry();
+        this.drawColorWheel();
 
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius - 1, startAngle, endAngle);
-        ctx.closePath();
+        this.colorKnob.addEventListener('pointerdown', () => this.isDragging = true, { passive: true });
+        this.colorPicker.addEventListener('pointerdown', () => this.isDragging = true, { passive: true });
+        document.addEventListener('pointermove', (e) => {
+            if (this.isDragging) {
+                this.handleKnobPosition(e);
+            }
+        }, { passive: true });
+        document.addEventListener('pointerup', () => this.isDragging = false, { passive: true });
+        this.colorPicker.addEventListener('click', (e) => {
+            if (e.target !== this.colorKnob) {
+                this.handleKnobPosition(e);
+            }
+        }, { passive: true });
 
-        let hue = angle;
-        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-        ctx.fill();
-    }
-
-    const radialGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-    radialGradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-    radialGradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
-    radialGradient.addColorStop(0.35, 'rgba(255, 255, 255, 1)');
-    radialGradient.addColorStop(0.6, 'rgba(255, 255, 255, 0)');
-    radialGradient.addColorStop(0.8, 'rgba(128, 128, 128, 0)');
-    radialGradient.addColorStop(0.95, 'rgba(0, 0, 0, 1)');
-    radialGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fillStyle = radialGradient;
-    ctx.fill();
-
-    let isDragging = false;
-    let currentX = centerX;
-    let currentY = centerY;
-
-    colorKnob.style.left = centerX + 'px';
-    colorKnob.style.top = centerY + 'px';
-
-    function updateColor(x, y) {
-        let pixel = ctx.getImageData(x, y, 1, 1).data;
-        let colorRGB = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-        let colorHex = rgbToHex(pixel[0], pixel[1], pixel[2]);
-        //colorDisplay.textContent = `Selected Color: ${rgbToHex(pixel[0], pixel[1], pixel[2])}`;
-        //colorDisplay.style.color = color;
-        colorKnob.style.backgroundColor = colorRGB;
-        colorKnob.dataset[colorPicker.parentElement.parentElement.getAttribute('name')] = colorHex;
-        console.log(colorKnob.dataset[colorPicker.parentElement.parentElement.getAttribute('name')]);
-        changeProperty(colorKnob);
-        /*document.documentElement.style.setProperty('--color-main-bg-custom', color);
-        background.color = color;
-        localStorage.setItem('background', JSON.stringify(background));
-
-        const luminance = getLuminance(pixel[0], pixel[1], pixel[2]);
-        const changeTo = luminance < 0.5 ? 'dark' : 'light';
-        if (changeTo != currentTheme) {
-            currentTheme = changeTo;
-            changeTheme();
+        // Add fallback for pointer events
+        if (!window.PointerEvent) {
+            this.colorKnob.addEventListener('mousedown', () => this.isDragging = true);
+            this.colorKnob.addEventListener('touchstart', (e) => {
+                this.isDragging = true;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', this.handleMove.bind(this));
+            document.addEventListener('touchmove', this.handleMove.bind(this));
+            
+            document.addEventListener('mouseup', () => this.isDragging = false);
+            document.addEventListener('touchend', () => this.isDragging = false);
         }
-        document.body.style.backgroundColor = color;*/
-        //document.documentElement.style.setProperty('--color-main-fg', textColor);
+
+        this.updateColor(this.currentX, this.currentY);
+        this.colorPicker.parentElement.style.display = 'none';
     }
 
-    function handleKnobPosition(e) {
-        updateGeometry(); // Recalculate geometry dynamically
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
+    updateGeometry() {
+        let rect = this.colorPicker.getBoundingClientRect();
+        this.centerX = rect.width / 2;
+        this.centerY = rect.height / 2;
+        this.radius = Math.min(this.centerX, this.centerY);
+    }
 
-        let dx = x - centerX;
-        let dy = y - centerY;
+    drawColorWheel() {
+        for (let angle = 0; angle < 360; angle++) {
+            let startAngle = (angle - 2) * Math.PI / 180;
+            let endAngle = angle * Math.PI / 180;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.centerX, this.centerY);
+            this.ctx.arc(this.centerX, this.centerY, this.radius - 1, startAngle, endAngle);
+            this.ctx.closePath();
+
+            let hue = angle;
+            this.ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+            this.ctx.fill();
+        }
+
+        const radialGradient = this.ctx.createRadialGradient(this.centerX, this.centerY, 0, this.centerX, this.centerY, this.radius);
+        radialGradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        radialGradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
+        radialGradient.addColorStop(0.35, 'rgba(255, 255, 255, 1)');
+        radialGradient.addColorStop(0.6, 'rgba(255, 255, 255, 0)');
+        radialGradient.addColorStop(0.8, 'rgba(128, 128, 128, 0)');
+        radialGradient.addColorStop(0.95, 'rgba(0, 0, 0, 1)');
+        radialGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+
+        this.ctx.beginPath();
+        this.ctx.arc(this.centerX, this.centerY, this.radius, 0, Math.PI * 2);
+        this.ctx.fillStyle = radialGradient;
+        this.ctx.fill();
+
+        this.currentX = this.centerX;
+        this.currentY = this.centerY;
+
+        this.colorKnob.style.left = this.currentX + 'px';
+        this.colorKnob.style.top = this.currentY + 'px';
+    }
+
+    updateColor(x, y) {
+        let pixel = this.ctx.getImageData(x, y, 1, 1).data;
+        let colorRGB = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        let colorHex = this.rgbToHex(pixel[0], pixel[1], pixel[2]);
+        this.colorKnob.style.backgroundColor = colorRGB;
+        this.name = this.colorPicker.parentElement.parentElement.getAttribute('name');
+        if (this.name) this.colorKnob.dataset[this.name] = colorHex;
+        this.colorKnob.dataset.name = this.name;
+        this.colorKnob.dataset.cssColor = colorHex;
+
+        if (editing) {
+            let beforePos = editing.dataset.colorKnobPos || '{}';
+            let positions = JSON.parse(beforePos);
+            this.colorKnob.getAttributeNames().forEach(function(attr) {
+                if (attr.startsWith('data-') && attr.includes('color')) {
+                    positions[this.name] = [x, y];
+                }
+            }.bind(this))
+            editing.dataset.colorKnobPos = JSON.stringify(positions);
+        }
+        changeProperty(this.colorKnob);
+    }
+
+    handleKnobPosition(e) {
+        this.updateGeometry(); // Recalculate geometry dynamically
+        let x = e.clientX - this.colorPicker.getBoundingClientRect().left;
+        let y = e.clientY - this.colorPicker.getBoundingClientRect().top;
+
+        let dx = x - this.centerX;
+        let dy = y - this.centerY;
         let distance = Math.sqrt(dx * dx + dy * dy);
         let angle = Math.atan2(dy, dx);
         if (setCurrentDistance) {
-            currentDistance = distance;
+            this.currentDistance = distance;
         }
-        let constrainedDistance = Math.min(currentDistance ? currentDistance : distance, radius - 2);
+        let constrainedDistance = Math.min(this.currentDistance ? this.currentDistance : distance, this.radius - 2);
 
-        currentX = centerX + constrainedDistance * Math.cos(angle);
-        currentY = centerY + constrainedDistance * Math.sin(angle);
+        this.currentX = this.centerX + constrainedDistance * Math.cos(angle);
+        this.currentY = this.centerY + constrainedDistance * Math.sin(angle);
 
-        requestAnimationFrame(updateUI);
+        requestAnimationFrame(this.updateUI.bind(this));
     }
 
-    function updateUI() {
-        colorKnob.style.left = currentX + 'px';
-        colorKnob.style.top = currentY + 'px';
-        updateColor(currentX, currentY);
+    updateUI() {
+        this.colorKnob.style.left = this.currentX + 'px';
+        this.colorKnob.style.top = this.currentY + 'px';
+        this.updateColor(this.currentX, this.currentY);
     }
 
-    colorKnob.addEventListener('pointerdown', () => isDragging = true, { passive: true });
-    colorPicker.addEventListener('pointerdown', () => isDragging = true, { passive: true });
-    document.addEventListener('pointermove', (e) => {
-        if (isDragging) {
-            handleKnobPosition(e);
+    handleMove(e) {
+        if (this.isDragging) {
+            let touch = e;
+            if (e.touches) {
+                touch = e.touches[0];
+            }
+            let x = touch.clientX - this.colorPicker.getBoundingClientRect().left;
+            let y = touch.clientY - this.colorPicker.getBoundingClientRect().top;
+            this.updateColor(x, y);
         }
-    }, { passive: true });
+    }
 
-    document.addEventListener('pointerup', () => isDragging = false, { passive: true });
-
-    colorPicker.addEventListener('click', (e) => {
-        if (e.target !== colorKnob) {
-            handleKnobPosition(e);
-        }
-    }, { passive: true });
-
-    function rgbToHex(r, g, b) {
+    rgbToHex(r, g, b) {
         return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
     }
 
-    // Add fallback for pointer events
-    if (!window.PointerEvent) {
-        colorKnob.addEventListener('mousedown', () => isDragging = true);
-        colorKnob.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            e.preventDefault();
-        });
-        
-        document.addEventListener('mousemove', handleMove);
-        document.addEventListener('touchmove', handleMove);
-        
-        document.addEventListener('mouseup', () => isDragging = false);
-        document.addEventListener('touchend', () => isDragging = false);
+    setKnobPosition(x, y) {
+        this.updateGeometry();
+        this.currentX = x;
+        this.currentY = y;
+        this.updateUI();
     }
 
-    updateColor(currentX, currentY);
-    colorPicker.parentElement.style.display = 'none';
+    setParent(parent) {
+        parent.appendChild(this.colorPicker.parentElement);
+        this.colorPicker.parentElement.style.display = 'block';
+        this.name = this.colorPicker.parentElement.parentElement.getAttribute('name');
+        let knobPos = editing.dataset.colorKnobPos;
+        if (knobPos) {
+            knobPos = JSON.parse(knobPos);
+            if (knobPos[this.name]) {
+                this.setKnobPosition(knobPos[this.name][0], knobPos[this.name][1]);
+                return;
+            }
+        }
+        this.setKnobPosition(this.centerX, this.centerY);
+    }
 }
-createColorPicker(150, 150);
+
+let colorPickerInstance = new ColorPicker(150, 150, 'colorPicker', 'colorKnob');
+//createColorPicker(150, 150);
 //#endregion
 
 
@@ -447,11 +495,13 @@ function showSettings(ele) {
              onkeydown="//saveSelection(this)"></pre>
         <div class="grid" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
             <label>Background color</label>
-            <div name="backgroundColor" style="width: 100%; height: 5em; background-color: gray;" onmouseover="this.appendChild(colorPicker.parentElement); colorPicker.parentElement.style.display = 'block';"></div>
-            <!--<input type="color" name="backgroundColor" value="${ele.dataset.backgroundColor ? ele.dataset.backgroundColor : 'transparent'}" oninput="changeProperty(this);">-->
+            <div name="backgroundColor" onmouseenter="colorPickerInstance.setParent(this)">
+                <span class="nothing">Select color</span>
+            </div>
             <label>Text color</label>
-            <div name="color" style="width: 100%; height: 5em; background-color: gray;" onmouseover="this.appendChild(colorPicker.parentElement); colorPicker.parentElement.style.display = 'block';"></div>
-            <!--<input type="color" name="color" value="${ele.dataset.color ? ele.dataset.color : '#000000'}" oninput="changeProperty(this);">-->
+            <div name="color" onmouseenter="colorPickerInstance.setParent(this)">
+                <span class="nothing">Select color</span>
+            </div>
         </div>
     `;
     formatXML(document.querySelector('#settings pre'), ele.querySelector('svg') ? ele.querySelector('svg').outerHTML : '<svg></svg>');
@@ -476,12 +526,12 @@ function changeProperty(self) {
         });
         property = self.value;
         value = self.options[self.selectedIndex].text;
-    } else if (self == colorKnob) {
+    /*} else if (self == colorKnob) {
         property = 'color';
-        value = self.dataset.color;
+        value = self.dataset.color;*/
     } else {
-        property = self.name;
-        value = self.value;
+        property = self.name || self.dataset.name;
+        value = self.value || self.dataset[property];
     }
     editing.dataset[property] = value;
     //console.log(`    Key: ${property}, Value: ${self.value}`);
