@@ -193,8 +193,10 @@ textarea {
 #outputContainer > div {
     position: relative;
     width: calc(50% - 0.5em);
+    padding: 1em;
     border: solid 1px var(--color-main-border-1);
     border-radius: 0.5em;
+    overflow-x: scroll;
 }
 #structureContainer,
 #structureContainer *:not(.nothing) {

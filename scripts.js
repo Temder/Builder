@@ -654,7 +654,7 @@ function formatXML(container, svgText) {
         } else {
             fragment.appendChild(document.createTextNode(item));
         }
-    });
+    })
     container.innerHTML = '';
     container.appendChild(fragment);
 }
@@ -911,4 +911,20 @@ function changeElementTag(element, newTag) {
 }
 function convertToDashStyle(str) {
     return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
+function stripHTML() {
+    let html = document.querySelector('#previewContainer').innerHTML;
+    var str = html.replace(/(\r\n|\n|\r)/gm, '').trim()
+                  .replace(/<[^>]*?nothing.*?<\/\w+>/, '')
+                  .replace(/>\s+</g, '><')
+                  .replace(/(data-name="SVG".*)<img.*?>/g, '$1');
+    document.body.insertAdjacentHTML('beforeend', str);
+    outputHTMLContainer.childNodes.forEach(function(child) {
+        if (child.classList && !child.classList.contains('nothing')) {
+            child.remove();
+        }
+    })
+    let pre = document.createElement('pre');
+    outputHTMLContainer.appendChild(pre);
+    formatXML(pre, str);
 }
