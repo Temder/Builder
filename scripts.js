@@ -598,66 +598,6 @@ function changeSVG(self, svg) {
     });
     refreshPreview();
 }
-function formatXML(container, svgText) {
-    // Entferne überflüssige Leerzeichen und neue Zeilen
-    svgText = svgText.trim();
-
-    // Füge Einzüge und neue Zeilen hinzu
-    const formattedSVG = svgText.replace(/(<[^>]+>)/g, '\n$1');
-
-    // Füge Einzüge für verschachtelte Elemente hinzu
-    const lines = formattedSVG.split('\n');
-    let indentLevel = 0;
-    const indentedLines = [];
-
-    for (const line of lines) {
-        const trimmedLine = line.trim(); // Entferne führende und nachfolgende Leerzeichen
-        if (trimmedLine === '') {
-            continue; // Überspringe leere Zeilen
-        }
-        var indent = '';
-        if (trimmedLine.match(/<[^\/]/)) {
-            indent = '  '.repeat(indentLevel);
-            indentLevel++;
-        } else if (trimmedLine.match(/<\//)) {
-            indentLevel--;
-            indent = '  '.repeat(indentLevel);
-        } else {
-            indent = '  '.repeat(indentLevel);
-        }
-        indentedLines.push(indent + trimmedLine);
-    }
-
-    let xml = indentedLines.join('\n');
-    /* let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
-                      .replace(/<\/(\w+)/g, '</|[$1°tag]|') // Add "[" before and "]" after the closing tag name and add "°" for color attribute
-                      .replace(/(\S+)=/g, '|[$1°attr]|=') // Add "[" before and "]" after the attribute name and add "°" for color attribute
-                      .replace(/"(.+?)"/g, '|["$1"°txt]|') // Add "[" before and "]" after the text and add "°" for color attribute
-                      .replace(/(<\/?|>)/g, '|[$1°tag-bracket]|') // Add "[" before and "]" after the tag brackets and add "°" for color attribute
-                      .split('|'); */
-    let xmlSplit = xml.replace(/(<\/?)(\w+)|(\S+)=|"(.+?)"/g, function(match, tagStart, tagName, attrName, attrValue) {
-        if (tagName) return `${tagStart}|[${tagName}°tag]|`;
-        if (attrName) return `|[${attrName}°attr]|=`;
-        if (attrValue) return `|["${attrValue}"°txt]|`;
-        if (tagStartBracket) return `|[${tagStartBracket}°tag-bracket]|`;
-        return match;
-    }).replace(/(<\/?|>)/g, '|[$1°tag-bracket]|').split('|');
-    //console.log(xmlSplit);
-    let fragment = document.createDocumentFragment();
-    xmlSplit.forEach(function(item) {
-        if (item.startsWith('[') && item.endsWith(']')) {
-            let ele = document.createElement('span');
-            let itemSplit = item.substring(1, item.length - 1).split('°');
-            ele.innerText = itemSplit[0];
-            ele.style.color = `var(--color-svg-${itemSplit[1]}-1)`;
-            fragment.appendChild(ele);
-        } else {
-            fragment.appendChild(document.createTextNode(item));
-        }
-    })
-    container.innerHTML = '';
-    container.appendChild(fragment);
-}
 function checkIndentation(input, indentSize = 2) {
     const lines = input.split('\n').filter(line => line.trim() !== '');
     const stack = [];
@@ -912,13 +852,78 @@ function changeElementTag(element, newTag) {
 function convertToDashStyle(str) {
     return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
+function formatXML(container, svgText) {
+    // Entferne überflüssige Leerzeichen und neue Zeilen
+    svgText = svgText.trim();
+
+    // Füge Einzüge und neue Zeilen hinzu
+    const formattedXML = svgText.replace(/(<[^>]+>)/g, '\n$1');
+
+    // Füge Einzüge für verschachtelte Elemente hinzu
+    const lines = formattedXML.split('\n').filter(n => n);
+    let indentLevel = 0;
+    const indentedLines = [];
+    var changeIndent = 0;
+
+    for (const line of lines) {
+        const trimmedLine = line.trim(); // Entferne führende und nachfolgende Leerzeichen
+        if (trimmedLine === '') {
+            continue; // Überspringe leere Zeilen
+        }
+        if (changeIndent == 1 && trimmedLine.match(/<[^\/]/)) { // Wenn vorherige und jetzige Zeile ein Start Tag ist
+            indentLevel++;
+            //console.log(`Increased indent to Level ${indentLevel} at line ${line}`);
+        } else if (changeIndent == -1 && trimmedLine.match(/<\//)) { // Wenn vorherige und jetzige Zeile ein End Tag ist
+            indentLevel--;
+            //console.log(`Degreased indent to Level ${indentLevel} at line ${line}`);
+        }
+        indentedLines.push('  '.repeat(indentLevel) + trimmedLine);
+        //console.log(`Indent Level: ${indentLevel}, Change Indent: ${changeIndent}, Line: ${line}`);
+        changeIndent = 0; // Setze changeIndent zurück, um nur einmal zu ändern
+        if (trimmedLine.match(/<img|<\//)) {
+            changeIndent = -1;
+        } else if (trimmedLine.match(/<[^\/]/)) {
+            changeIndent = 1;
+        }
+    }
+
+    let xml = indentedLines.join('\n');
+    /* let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
+                      .replace(/<\/(\w+)/g, '</|[$1°tag]|') // Add "[" before and "]" after the closing tag name and add "°" for color attribute
+                      .replace(/(\S+)=/g, '|[$1°attr]|=') // Add "[" before and "]" after the attribute name and add "°" for color attribute
+                      .replace(/"(.+?)"/g, '|["$1"°txt]|') // Add "[" before and "]" after the text and add "°" for color attribute
+                      .replace(/(<\/?|>)/g, '|[$1°tag-bracket]|') // Add "[" before and "]" after the tag brackets and add "°" for color attribute
+                      .split('|'); */
+    let xmlSplit = xml.replace(/(<\/?)(\w+)|(\S+)=|"(.+?)"/g, function(match, tagStart, tagName, attrName, attrValue) {
+        if (tagName) return `${tagStart}|[${tagName}°tag]|`;
+        if (attrName) return `|[${attrName}°attr]|=`;
+        if (attrValue) return `|["${attrValue}"°txt]|`;
+        if (tagStartBracket) return `|[${tagStartBracket}°tag-bracket]|`;
+        return match;
+    }).replace(/(<\/?|>)/g, '|[$1°tag-bracket]|').split('|');
+    //console.log(xmlSplit);
+    let fragment = document.createDocumentFragment();
+    xmlSplit.forEach(function(item) {
+        if (item.startsWith('[') && item.endsWith(']')) {
+            let ele = document.createElement('span');
+            let itemSplit = item.substring(1, item.length - 1).split('°');
+            ele.innerText = itemSplit[0];
+            ele.style.color = `var(--color-svg-${itemSplit[1]}-1)`;
+            fragment.appendChild(ele);
+        } else {
+            fragment.appendChild(document.createTextNode(item));
+        }
+    })
+    container.innerHTML = '';
+    container.appendChild(fragment);
+}
 function stripHTML() {
     let html = document.querySelector('#previewContainer').innerHTML;
     var str = html.replace(/(\r\n|\n|\r)/gm, '').trim()
-                  .replace(/<[^>]*?nothing.*?<\/\w+>/, '')
-                  .replace(/>\s+</g, '><')
-                  .replace(/(data-name="SVG".*)<img.*?>/g, '$1');
-    document.body.insertAdjacentHTML('beforeend', str);
+                  .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
+                  .replace(/<[^>]*?nothing.*?<\/\w+>|data-name="\w+" ?|data-color-knob-pos=".+?" ?/g, '')
+                  .replace(/>\s+</g, '><');
+    //document.body.insertAdjacentHTML('beforeend', str);
     outputHTMLContainer.childNodes.forEach(function(child) {
         if (child.classList && !child.classList.contains('nothing')) {
             child.remove();
