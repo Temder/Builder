@@ -19,6 +19,7 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
                       'horizontal-start','horizontal-center', 'horizontal-end',
                       'vertical-start',  'vertical-center',   'vertical-end'
 ];
+const styles = Array.from(document.styleSheets[0].cssRules).map(rule => rule.cssText).filter(style => /^\.[\w\. :(),-]+{/.test(style));
 
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
@@ -919,7 +920,7 @@ function formatXML(container, svgText) {
 }
 function stripHTML() {
     let html = document.querySelector('#previewContainer').innerHTML;
-    var str = html.replace(/(\r\n|\n|\r)/gm, '').trim()
+    let strHTML = html.replace(/(\r\n|\n|\r)/gm, '').trim()
                   .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
                   .replace(/<[^>]*?nothing.*?<\/\w+>|data-name="\w+" ?|data-color-knob-pos=".+?" ?/g, '')
                   .replace(/>\s+</g, '><');
@@ -929,7 +930,18 @@ function stripHTML() {
             child.remove();
         }
     })
-    let pre = document.createElement('pre');
-    outputHTMLContainer.appendChild(pre);
-    formatXML(pre, str);
+    let preHTML = document.createElement('pre');
+    let preCSS = document.createElement('pre');
+    outputHTMLContainer.appendChild(preHTML);
+    outputCSSContainer.appendChild(preCSS);
+    let strCSS = '';
+    styles.forEach(function (style) {
+        structureContainer.children[1].classList.forEach(function (cl) {
+            if (style.includes(cl)) {
+                strCSS += `${style}\n`;
+            }
+        })
+    })
+    formatXML(preHTML, strHTML);
+    formatXML(preCSS, strCSS);
 }
