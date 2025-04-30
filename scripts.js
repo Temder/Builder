@@ -919,11 +919,11 @@ function formatXML(container, svgText) {
     container.appendChild(fragment);
 }
 function stripHTML() {
-    let html = document.querySelector('#previewContainer').innerHTML;
+    let html = document.querySelector('#previewContainer').outerHTML;
     let strHTML = html.replace(/(\r\n|\n|\r)/gm, '').trim()
-                  .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
-                  .replace(/<[^>]*?nothing.*?<\/\w+>|data-name="\w+" ?|data-color-knob-pos=".+?" ?/g, '')
-                  .replace(/>\s+</g, '><');
+                      .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
+                      .replace(/<[^>]*?nothing.*?<\/\w+>|data-name="\w+" ?|data-color-knob-pos=".+?" ?/g, '')
+                      .replace(/>\s+</g, '><');
     //document.body.insertAdjacentHTML('beforeend', str);
     outputHTMLContainer.childNodes.forEach(function(child) {
         if (child.classList && !child.classList.contains('nothing')) {
@@ -936,11 +936,22 @@ function stripHTML() {
     outputCSSContainer.appendChild(preCSS);
     let strCSS = '';
     styles.forEach(function (style) {
-        structureContainer.children[1].classList.forEach(function (cl) {
-            if (style.includes(cl)) {
+        //structureContainer.children[1].classList.forEach(function (cl) {
+            let cl = structureContainer.children[1].classList;
+			let selectors = style.split('{')[0]
+                                 .replace(/([\w-]+)\./g, '$1&')
+                                 .replaceAll(':not(.', '!')
+                                 .replaceAll('.', '&')
+                                 .replaceAll(')', '')
+                                 .trim();
+            let included = selectors.split(',')[0].split('!')[0].split('&').filter(n => n);
+            //let excluded = selectors.split(',')[0].split('!')[1].split('&').filter(n => n);
+            let checker = (arr, target) => target.every(v => arr.includes(v));
+            console.log(selectors.split(',')[0].split('!')[0].split('&').filter(n => n));
+            if (checker(Array.from(cl), included)) {
                 strCSS += `${style}\n`;
             }
-        })
+        //})
     })
     formatXML(preHTML, strHTML);
     formatXML(preCSS, strCSS);

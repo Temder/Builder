@@ -472,36 +472,36 @@ textarea {
     min-width: 3em;
     min-height: 3em;
 }
-.layout-horizontal.horizontal-start:not(.layout-grid),
-.layout-vertical.vertical-start:not(.layout-grid) {
+.layout-horizontal.horizontal-start,
+.layout-vertical.vertical-start {
     justify-content: start;
 }
-.layout-horizontal.horizontal-center:not(.layout-grid),
-.layout-vertical.vertical-center:not(.layout-grid) {
+.layout-horizontal.horizontal-center,
+.layout-vertical.vertical-center {
     justify-content: center;
 }
-.layout-horizontal.horizontal-end:not(.layout-grid),
-.layout-vertical.vertical-end:not(.layout-grid) {
+.layout-horizontal.horizontal-end,
+.layout-vertical.vertical-end {
     justify-content: end;
 }
-.layout-horizontal.vertical-start:not(.layout-grid),
-.layout-vertical.horizontal-start:not(.layout-grid) {
+.layout-horizontal.vertical-start,
+.layout-vertical.horizontal-start {
     align-content: start;
 }
-.layout-horizontal.vertical-center:not(.layout-grid),
-.layout-vertical.horizontal-center:not(.layout-grid) {
+.layout-horizontal.vertical-center,
+.layout-vertical.horizontal-center {
     align-content: center;
 }
-.layout-horizontal.vertical-end:not(.layout-grid),
-.layout-vertical.horizontal-end:not(.layout-grid) {
+.layout-horizontal.vertical-end,
+.layout-vertical.horizontal-end {
     align-content: end;
 }
-.layout-horizontal.vertical-center:not(.layout-grid) *,
-.layout-vertical.horizontal-center:not(.layout-grid) * {
+.layout-horizontal.vertical-center *,
+.layout-vertical.horizontal-center * {
     align-self: center;
 }
-.layout-horizontal.vertical-end:not(.layout-grid) *,
-.layout-vertical.horizontal-end:not(.layout-grid) * {
+.layout-horizontal.vertical-end *,
+.layout-vertical.horizontal-end * {
     align-self: end;
 }
 .layout-vertical .spacing {
