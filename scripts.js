@@ -944,13 +944,16 @@ function stripHTML() {
                                  .replaceAll('.', '&')
                                  .replaceAll(')', '')
                                  .trim();
-            let included = selectors.split(',')[0].split('!')[0].split('&').filter(n => n);
+            let included = selectors.split(',')[0]
             //let excluded = selectors.split(',')[0].split('!')[1].split('&').filter(n => n);
             let checker = (arr, target) => target.every(v => arr.includes(v));
-            console.log(selectors.split(',')[0].split('!')[0].split('&').filter(n => n));
-            if (checker(Array.from(cl), included)) {
-                strCSS += `${style}\n`;
-            }
+            Array.from(included.forEach(function(incl) {
+                incl = incl.split('!')[0].split('&').filter(n => n);
+                console.log(incl);
+                if (checker(Array.from(cl), incl)) {
+                    strCSS += `${style}\n`;
+                }
+            })
         //})
     })
     formatXML(preHTML, strHTML);
