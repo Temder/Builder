@@ -21,6 +21,11 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
 ];
 const styles = Array.from(document.styleSheets[0].cssRules).map(rule => rule.cssText).filter(style => /^\.[\w\. :(),-]+{/.test(style));
 
+document.onmousemove = function(event) {
+    document.body.style.setProperty('--mouse-x', event.clientX + 'px');
+    document.body.style.setProperty('--mouse-y', event.clientY + 'px');
+    document.getElementById('mouse').innerHTML = event.target.dataset.name || 'no data';
+}
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
         let lastEdited = structureContainer.parentElement.querySelector('.editing');
@@ -784,51 +789,6 @@ Object.entries(colorVariables).forEach(function([key, val]) {
 
 
 
-function refreshPreview() {
-    let children = Array.from(previewContainer.children).concat(Array.from(outputHTMLContainer.children)).concat(Array.from(outputCSSContainer.children));
-    children.forEach(function(child) {
-        if (!child.classList.contains('nothing')) {
-            child.remove();
-        }
-    })
-    structureContainer.getAttributeNames().forEach(function(attr) {
-        attr = attr.replace('data-', '');
-        if (cssVariables.includes(attr)) {
-            previewContainer.style.setProperty(`--${attr}`, structureContainer.getAttribute(`data-${attr}`));
-        }
-    })
-    structureContainer.querySelectorAll('#structureContainer > *:not(:first-child)').forEach(function(child) {
-        let preview = child.cloneNode(true);
-        removeAttributes(preview);
-        previewContainer.innerHTML += preview.outerHTML;
-    })
-    previewContainer.querySelectorAll('.structure-item:not(.container):not(.spacing)').forEach(function(el) {
-        removeAttributes(el);
-        /*if (!table) {
-            return;
-        }
-        let value = table.rows[rowSelect.value].c[headers.indexOf(el.textContent.trim())]
-        if (value) {
-            if (el.dataset.type == 'image') {
-                let img = changeElementTag(el, 'img');
-                img.src = value.v;
-            } else {
-                el.innerHTML = value.v;
-            }
-        } else {
-            if (el.dataset.name == 'text') {
-                return;
-            }
-            el.innerHTML = el.dataset.empty != undefined ? el.dataset.empty : 'no data';
-        }*/
-    })
-    /*if (rowSelect) {
-        let value = rowSelect.value;
-        rowSelect = document.querySelector('#previewContainer > select');
-        rowSelect.value = value;
-    }*/
-}
-
 function removeAttributes(ele) {
     ele.setAttribute('draggable', false);
     ele.classList.remove('editing');
@@ -889,16 +849,10 @@ function formatXML(container, svgText) {
     }
 
     let xml = indentedLines.join('\n');
-    /* let xmlSplit = xml.replace(/<(\w+)/g, '<|[$1°tag]|') // Add "[" before and "]" after the opening tag name and add "°" for color attribute
-                      .replace(/<\/(\w+)/g, '</|[$1°tag]|') // Add "[" before and "]" after the closing tag name and add "°" for color attribute
-                      .replace(/(\S+)=/g, '|[$1°attr]|=') // Add "[" before and "]" after the attribute name and add "°" for color attribute
-                      .replace(/"(.+?)"/g, '|["$1"°txt]|') // Add "[" before and "]" after the text and add "°" for color attribute
-                      .replace(/(<\/?|>)/g, '|[$1°tag-bracket]|') // Add "[" before and "]" after the tag brackets and add "°" for color attribute
-                      .split('|'); */
-    let xmlSplit = xml.replace(/(<\/?)(\w+)|(\S+)=|"(.+?)"/g, function(match, tagStart, tagName, attrName, attrValue) {
+    let xmlSplit = xml.replace(/(<\/?)(\w+)|(\S+)=|(".*?")/g, function(match, tagStart, tagName, attrName, attrValue) {
         if (tagName) return `${tagStart}|[${tagName}°tag]|`;
         if (attrName) return `|[${attrName}°attr]|=`;
-        if (attrValue) return `|["${attrValue}"°txt]|`;
+        if (attrValue) return `|[${attrValue}°txt]|`;
         if (tagStartBracket) return `|[${tagStartBracket}°tag-bracket]|`;
         return match;
     }).replace(/(<\/?|>)/g, '|[$1°tag-bracket]|').split('|');
@@ -909,16 +863,114 @@ function formatXML(container, svgText) {
             let ele = document.createElement('span');
             let itemSplit = item.substring(1, item.length - 1).split('°');
             ele.innerText = itemSplit[0];
-            ele.style.color = `var(--color-svg-${itemSplit[1]}-1)`;
+            ele.style.color = `var(--color-xml-${itemSplit[1]}-1)`;
             fragment.appendChild(ele);
         } else {
             fragment.appendChild(document.createTextNode(item));
         }
     })
+
     container.innerHTML = '';
     container.appendChild(fragment);
 }
-function stripHTML() {
+function formatCSS(container, cssText) {
+    let indent = ' ';
+    let cssSplit = cssText.replace(/;(?!\s+})/g, `;\n${indent}`).replace(/{/g, `{\n${indent}`).replace(/}/g, '\n}').split('\n');
+
+    /*cssSplit = cssSplit.forEach(function(line, index) {
+        return line + '|';
+    }).split('|');*/
+    cssSplit = cssSplit.map(function(line) {
+        if (line.trim() == '') return;
+        if (line.endsWith('{')) {
+            line = line.replace(/([^,]+)(,?)[^{]/g, '|[$1°selector]|$2 ')
+        } else {
+            line = line.replace(/([^\s]+):|(--[^,)]+)|(\w+)\(|([\d.]+\w*)|(#\w+)|(!?[A-Za-z-]*)/g, function(match, rule, variable, func, number, hexColor, text) {
+                if (rule) return `|[${rule}°rule]|:`;
+                if (variable) return `|[${variable}°rule]|`;
+                if (func) return `|[${func}°function]|(`;
+                if (number) return `|[${number}°number]|`;
+                if (hexColor || text) return `|[${hexColor ? hexColor : text}°text]|`;
+                return match;
+            })
+        }
+        return line.replace(/([{}])|([()])/g, function(match, curlyBrackets, roundBrackets) {
+            if (curlyBrackets) return `|[${curlyBrackets}°bracketC]|`;
+            if (roundBrackets) return `|[${roundBrackets}°bracketR]|`;
+            return match;
+        })
+    }).join('\n').split('|');
+    //console.log(cssSplit);
+
+    //let css = cssText.join('\n');
+    /*let cssSplit = cssText.replace(/([{}])|([()])/g, function(match, curlyBrackets, roundBrackets) {
+        if (curlyBrackets) return `|[${curlyBrackets}°bracketC]|`;
+        if (roundBrackets) return `|[${roundBrackets}°bracketR]|`;
+        return match;
+    }).replace(/([-\w.]+)(.*bracketC)/g, '|[$1°selector]|$2').split('|');*/
+    //console.log(cssSplit);
+    let fragment = document.createDocumentFragment();
+    cssSplit.forEach(function(item) {
+        if (item.startsWith('[') && item.endsWith(']')) {
+            let ele = document.createElement('span');
+            let itemSplit = item.substring(1, item.length - 1).split('°');
+            ele.innerText = itemSplit[0];
+            ele.style.color = `var(--color-css-${itemSplit[1]}-1)`;
+            fragment.appendChild(ele);
+        } else {
+            fragment.appendChild(document.createTextNode(item));
+        }
+    })
+    
+    container.innerHTML = '';
+    container.appendChild(fragment);
+}
+function refreshPreview() {
+    let children = Array.from(previewContainer.children).concat(Array.from(outputHTMLContainer.children)).concat(Array.from(outputCSSContainer.children));
+    children.forEach(function(child) {
+        if (!child.classList.contains('nothing')) {
+            child.remove();
+        }
+    })
+    structureContainer.getAttributeNames().forEach(function(attr) {
+        attr = attr.replace('data-', '');
+        if (cssVariables.includes(attr)) {
+            previewContainer.style.setProperty(`--${attr}`, structureContainer.getAttribute(`data-${attr}`));
+        }
+    })
+    structureContainer.querySelectorAll('#structureContainer > *:not(:first-child)').forEach(function(child) {
+        let preview = child.cloneNode(true);
+        removeAttributes(preview);
+        previewContainer.innerHTML += preview.outerHTML;
+    })
+    previewContainer.querySelectorAll('.structure-item:not(.container):not(.spacing)').forEach(function(el) {
+        removeAttributes(el);
+        /*if (!table) {
+            return;
+        }
+        let value = table.rows[rowSelect.value].c[headers.indexOf(el.textContent.trim())]
+        if (value) {
+            if (el.dataset.type == 'image') {
+                let img = changeElementTag(el, 'img');
+                img.src = value.v;
+            } else {
+                el.innerHTML = value.v;
+            }
+        } else {
+            if (el.dataset.name == 'text') {
+                return;
+            }
+            el.innerHTML = el.dataset.empty != undefined ? el.dataset.empty : 'no data';
+        }*/
+    })
+    /*if (rowSelect) {
+        let value = rowSelect.value;
+        rowSelect = document.querySelector('#previewContainer > select');
+        rowSelect.value = value;
+    }*/
+    refreshOutput();
+}
+function refreshOutput() {
     let html = document.querySelector('#previewContainer').outerHTML;
     let strHTML = html.replace(/(\r\n|\n|\r)/gm, '').trim()
                       .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
@@ -937,19 +989,28 @@ function stripHTML() {
     let strCSS = '';
     styles.forEach(function (style) {
         //structureContainer.children[1].classList.forEach(function (cl) {
-            let cl = structureContainer.children[1].classList;
+            //let cl = structureContainer.children[1].classList;
+            let cl = [];
+            structureContainer.childNodes.forEach(function(child) {
+                if (child.classList && !child.classList.contains('nothing') && child.classList.length > 0) {
+                    cl = cl.concat(Array.from(child.classList));
+                }
+            })
 			let selectors = style.split('{')[0]
                                  .replace(/([\w-]+)\./g, '$1&')
                                  .replaceAll(':not(.', '!')
                                  .replaceAll('.', '&')
                                  .replaceAll(')', '')
                                  .trim();
-            let included = selectors.split(',')[0]
+            let included = selectors.split(',')
             //let excluded = selectors.split(',')[0].split('!')[1].split('&').filter(n => n);
             let checker = (arr, target) => target.every(v => arr.includes(v));
-            Array.from(included.forEach(function(incl) {
-                incl = incl.split('!')[0].split('&').filter(n => n);
-                console.log(incl);
+            if (included.length > 1) {
+                included = Array.from(included);
+            }
+            included.forEach(function(incl) {
+                incl = incl.split('!')[0].split('&').filter(n => n).filter((item) => item != ' ');
+                //console.log(incl);
                 if (checker(Array.from(cl), incl)) {
                     strCSS += `${style}\n`;
                 }
@@ -957,5 +1018,5 @@ function stripHTML() {
         //})
     })
     formatXML(preHTML, strHTML);
-    formatXML(preCSS, strCSS);
+    formatCSS(preCSS, strCSS);
 }

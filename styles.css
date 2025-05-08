@@ -8,16 +8,31 @@
     --color-main-border-2: #8c8c8c;
     --color-settings-bg: #bfbfbf;
     --color-settings-fg: #4a4a4a;
-    --color-svg-attr-1: #3ab9fd;
-    --color-svg-attr-2: #9cdcfe;
-    --color-svg-tag-1: #286ca4;
-    --color-svg-tag-2: #579dd6;
-    --color-svg-tag-bracket-1: #4f4f4f;
-    --color-svg-tag-bracket-2: #808080;
-    --color-svg-txt-1: #a95b3d;
-    --color-svg-txt-2: #ce9178;
     --display-sun: block;
     --display-moon: none;
+
+    --color-xml-attr-1: #3ab9fd;
+    --color-xml-attr-2: #9cdcfe;
+    --color-xml-tag-1: #286ca4;
+    --color-xml-tag-2: #579dd6;
+    --color-xml-tag-bracket-1: #4f4f4f;
+    --color-xml-tag-bracket-2: #808080;
+    --color-xml-txt-1: #a95b3d;
+    --color-xml-txt-2: #ce9178;
+    --color-css-bracketC-1: #ffe761;
+    --color-css-bracketC-2: #ffd700;
+    --color-css-bracketR-1: #eebeed;
+    --color-css-bracketR-2: #da70d6;
+    --color-css-function-1: #f8f8ed;
+    --color-css-function-2: #dcdcaa;
+    --color-css-number-1: #e9f0e5;
+    --color-css-number-2: #b5cea8;
+    --color-css-rule-1: var(--color-xml-attr-2);
+    --color-css-rule-2: var(--color-xml-attr-1);
+    --color-css-selector-1: #eee2c8;
+    --color-css-selector-2: #d7ba7d;
+    --color-css-text-1: var(--color-xml-txt-2);
+    --color-css-text-2: var(--color-xml-txt-1);
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -146,6 +161,14 @@ textarea {
 #elementsContainer > div:hover,
 #elementsContainer > div:hover:after {
     background-color: var(--color-element-hover-1);
+}
+#mouse {
+    position: absolute;
+    left: var(--mouse-x, 0);
+    top: var(--mouse-y, 0);
+    background-color: black;
+    user-select: none;
+    z-index: 100;
 }
 #structureContainer,
 #previewContainer,
