@@ -22,8 +22,13 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
 const styles = Array.from(document.styleSheets[0].cssRules).map(rule => rule.cssText).filter(style => /^\.[\w\. :(),-]+{/.test(style));
 
 document.onmousemove = function(event) {
-    document.body.style.setProperty('--mouse-x', event.clientX + 'px');
+    document.body.style.setProperty('--mouse-x', event.clientX + 20 + 'px');
     document.body.style.setProperty('--mouse-y', event.clientY + 'px');
+    document.getElementById('mouse').innerHTML = event.target.dataset.name || 'no data';
+}
+document.body.onwheel = function(event) {
+    document.body.style.setProperty('--mouse-x', event.clientX + 20 + 'px');
+    document.body.style.setProperty('--mouse-y', event.clientY + document.scrollingElement.scrollTop + 'px');
     document.getElementById('mouse').innerHTML = event.target.dataset.name || 'no data';
 }
 document.onclick = function(event) {
