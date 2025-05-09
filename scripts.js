@@ -24,12 +24,22 @@ const styles = Array.from(document.styleSheets[0].cssRules).map(rule => rule.css
 document.onmousemove = function(event) {
     document.body.style.setProperty('--mouse-x', event.clientX + 20 + 'px');
     document.body.style.setProperty('--mouse-y', event.clientY + 'px');
-    document.getElementById('mouse').innerHTML = event.target.dataset.name || 'no data';
+    if (event.target.dataset.name) {
+        document.getElementById('mouse').style.display = 'block';
+        document.getElementById('mouse').innerHTML = event.target.dataset.name;
+    } else {
+        document.getElementById('mouse').style.display = 'none';
+    }
 }
 document.body.onwheel = function(event) {
     document.body.style.setProperty('--mouse-x', event.clientX + 20 + 'px');
     document.body.style.setProperty('--mouse-y', event.clientY + document.scrollingElement.scrollTop + 'px');
-    document.getElementById('mouse').innerHTML = event.target.dataset.name || 'no data';
+    if (event.target.dataset.name) {
+        document.getElementById('mouse').style.display = 'block';
+        document.getElementById('mouse').innerHTML = event.target.dataset.name;
+    } else {
+        document.getElementById('mouse').style.display = 'none';
+    }
 }
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
