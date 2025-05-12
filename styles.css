@@ -318,6 +318,7 @@ textarea {
     text-align: center;
     align-content: center;
     pointer-events: none;
+    color: var(--color-main-fg);
 }
 .nothing:has(+ *) {
     display: none;
@@ -327,6 +328,10 @@ textarea {
 }
 .nowrap {
     flex-wrap: nowrap;
+}
+.text-outline {
+    -webkit-text-stroke: 0.3em var(--color-main-bg);
+    paint-order: stroke;
 }
 .switch {
     display: inline-block;

@@ -21,7 +21,7 @@ const orientations = ['layout-vertical', 'layout-horizontal', 'layout-grid',
 ];
 const styles = Array.from(document.styleSheets[0].cssRules).map(rule => rule.cssText).filter(style => /^\.[\w\. :(),-]+{/.test(style));
 
-document.onmousemove = function(event) {
+/*document.onmousemove = function(event) {
     document.body.style.setProperty('--mouse-x', event.clientX + 20 + 'px');
     document.body.style.setProperty('--mouse-y', event.clientY + 'px');
     if (event.target.dataset.name) {
@@ -40,7 +40,7 @@ document.body.onwheel = function(event) {
     } else {
         document.getElementById('mouse').style.display = 'none';
     }
-}
+}*/
 document.onclick = function(event) {
     if (!settings.contains(event.target)) {
         let lastEdited = structureContainer.parentElement.querySelector('.editing');
@@ -516,11 +516,15 @@ function showSettings(ele) {
              onkeydown="//saveSelection(this)"></pre>
         <div class="grid" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
             <label>Background color</label>
-            <div name="backgroundColor" onmouseenter="colorPickerInstance.setParent(this)">
+            <div name="backgroundColor"
+                 onmouseenter="colorPickerInstance.setParent(this)"
+                 onmouseleave="colorPickerInstance.style.display = 'none'; colorPickerInstance.setParent(document.body)">
                 <span class="nothing">Select color</span>
             </div>
             <label>Text color</label>
-            <div name="color" onmouseenter="colorPickerInstance.setParent(this)">
+            <div name="color"
+                 onmouseenter="colorPickerInstance.setParent(this)"
+                 onmouseleave="colorPickerInstance.style.display = 'none'; colorPickerInstance.setParent(document.body)">
                 <span class="nothing">Select color</span>
             </div>
         </div>
