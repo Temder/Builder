@@ -81,6 +81,9 @@ body {
     background-color: var(--color-main-bg);
     color: var(--color-main-fg);
 }
+body > .colorPicker {
+    display: none;
+}
 details {
     border: 1px solid var(--color-settings-fg);
     border-radius: 4px;
@@ -143,14 +146,6 @@ textarea {
     margin: 2em 2em 3em 0.5em !important;
     gap: 2em;
 }
-#elementsContainer:before {
-    content: "Elements";
-    position: absolute;
-    left: 0;
-    top: -2em;
-    pointer-events: none;
-    font-weight: bold;
-}
 #elementsContainer > div {
     text-align: center;
     border: solid 1px var(--color-main-border-2);
@@ -185,8 +180,10 @@ textarea {
     padding: 0.5em;
     flex-wrap: wrap;
 }
+#elementsContainer:before,
 #structureContainer:before,
 #previewContainer:before,
+#outputContainer:before,
 #outputContainer #html:before,
 #outputContainer #css:before {
     position: absolute;
@@ -194,13 +191,20 @@ textarea {
     top: -2em;
     padding: 0.25em;
     pointer-events: none;
+    font-weight: bold;
     color: var(--color-main-fg);
+}
+#elementsContainer:before {
+    content: "Elements";
 }
 #structureContainer:before {
     content: "Structure Builder";
 }
 #previewContainer:before {
     content: "Preview";
+}
+#outputContainer:before {
+    content: "Output";
 }
 #outputContainer #html:before {
     content: "Output HTML";
@@ -298,6 +302,17 @@ textarea {
     flex-wrap: var(--wrap, wrap);
     flex-direction: var(--direction, row);
     gap: var(--gap);
+    justify-content: var(--justify);
+    width: var(--width, auto);
+}
+.flex label {
+    white-space: pre-line;
+    text-align: center;
+}
+.flex label > *:first-child {
+    margin-top: 0.5em;
+    min-height: 2em;
+    white-space: collapse;
 }
 .float-left {
     float: left;
@@ -642,7 +657,7 @@ textarea {
     display: flex;
     position: fixed;
     flex-direction: column;
-    gap: 0.5em;
+    gap: 1em;
     top: 0;
     right: 0;
     width: 50%;
@@ -650,7 +665,7 @@ textarea {
     padding: 1em 1em 0;
     margin: 1em 0;
     background-color: var(--color-settings-bg);
-    transform: translateX(110%);
+    transform: translateX(calc(100% + 3em));
     transition: transform 0.75s;
     border-top: solid 2px var(--color-main-border-1);
     border-left: solid 2px var(--color-main-border-1);
@@ -669,9 +684,10 @@ textarea {
     background-color: inherit;
     border-radius: 0.5em 0 0 0.5em;
     pointer-events: none;
-    border-top: solid 2px var(--color-main-border-1);
-    border-left: solid 2px var(--color-main-border-1);
-    border-bottom: solid 2px var(--color-main-border-1);
+    border-top: solid 2px;
+    border-left: solid 2px;
+    border-bottom: solid 2px;
+    border-color: inherit;
 }
 #settings:after {
     content: "";
@@ -792,6 +808,7 @@ textarea {
 }
 #settings div[name=backgroundColor],
 #settings div[name=color] {
+    display: inline-block;
     position: relative;
     width: min-content;
     height: min-content;
@@ -831,6 +848,7 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5em;
+    justify-content: center;
 }
 #settings .multi-switch > div {
     position: relative;

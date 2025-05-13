@@ -47,7 +47,7 @@ document.onclick = function(event) {
         if (lastEdited) {
             lastEdited.classList.remove('editing');
             document.body.appendChild(colorPicker.parentElement);
-            colorPicker.parentElement.style.display = 'none';
+            //colorPicker.parentElement.style.display = 'none';
         }
         if (structureContainer.contains(event.target) && event.target != lastEdited) {
             event.target.classList.add('editing');
@@ -145,14 +145,15 @@ class ColorPicker {
         }
 
         this.updateColor(this.currentX, this.currentY);
-        this.colorPicker.parentElement.style.display = 'none';
     }
 
     updateGeometry() {
+        this.colorPicker.parentElement.style.display = 'block';
         let rect = this.colorPicker.getBoundingClientRect();
         this.centerX = rect.width / 2;
         this.centerY = rect.height / 2;
         this.radius = Math.min(this.centerX, this.centerY);
+        this.colorPicker.parentElement.style.removeProperty('display');
     }
 
     drawColorWheel() {
@@ -265,7 +266,6 @@ class ColorPicker {
 
     setParent(parent) {
         parent.appendChild(this.colorPicker.parentElement);
-        this.colorPicker.parentElement.style.display = 'block';
         this.name = this.colorPicker.parentElement.parentElement.getAttribute('name');
         let knobPos = editing.dataset.colorKnobPos;
         if (knobPos) {
@@ -420,8 +420,8 @@ function showSettings(ele) {
                 </div>
             </div>
         </details>
-        <div class="grid layout" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
-            <label>Layout</label>
+        <div class="layout flex" style="--display: inline-flex; --gap: 0.5em; --justify: space-around;">
+            <label>Layout
             <div class="multi-switch" style="--display: inline-flex;">
                 <div class="flex" style="--direction: column;">
                     <input type="radio" name="layout" value="layout-vertical" class="last-checked" onchange="changeLayout(this)"
@@ -439,9 +439,9 @@ function showSettings(ele) {
                     <input type="number" size="1" value="${ele.dataset.rows ? ele.dataset.rows : '2'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeRows(this.value);">
                     <input type="number" size="1" value="${ele.dataset.cols ? ele.dataset.cols : '2'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeCols(this.value);">
                 </div>
-            </div>
-            <label class="orientation">Orientation</label>
-            <div class="multi-switch orientation" style="--display: inline-flex;">
+            </div></label>
+            <label class="orientation">Orientation
+            <div class="multi-switch orientation" style="--display: inline-flex; --justify: initial;">
                 <div class="flex">
                     <input type="radio" name="orientation-h" value="horizontal-start" class="last-checked" onchange="changeLayout(this)"
                     ${ele.classList.contains('horizontal-start') ? 'checked' : ''}>
@@ -472,7 +472,7 @@ function showSettings(ele) {
                     ${ele.classList.contains('vertical-end') ? 'checked' : ''}>
                     <div></div><div></div>
                 </div>
-            </div>
+            </div></label>
         </div>
         <!--<label for="type" class="type">Viewing Type</label>
         <select name="type" class="type" onchange="changeType(this.value)">
@@ -481,28 +481,32 @@ function showSettings(ele) {
         </select>
         <label class="type">Empty Text</label>
         <input class="type" size="1" value="${ele.dataset.empty != undefined ? ele.dataset.empty : 'no data'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeEmpty(this.value);">-->
-        <div class="text grid" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
-            <label>Font family</label>
-            <select onchange="changeProperty(this)">
-                <option value="fontFamily" ${ele.dataset.fontFamily == 'Sans-Serif' ? 'selected' : ''}>Sans-Serif</option>
-                <option value="fontFamily" ${ele.dataset.fontFamily == 'Serif' ? 'selected' : ''}>Serif</option>
-                <option value="fontFamily" ${ele.dataset.fontFamily == 'Monospace' ? 'selected' : ''}>Monospace</option>
-                <option value="fontFamily" ${ele.dataset.fontFamily == 'Cursive' ? 'selected' : ''}>Cursive</option>
-            </select>
-            <label>Font size</label>
-            <input size="1" name="fontSize" value="${ele.dataset.fontSize ? ele.dataset.fontSize : '1em'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-            <label>Font style</label>
-            <div class="flex" style="--display: inline-flex; --gap: 0.5em;">
-                <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="fontWeight" value="bold" ${ele.dataset.fontWeight == 'bold' ? 'checked' : ''} /><b>B</b></div>
-                <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="fontStyle" value="italic" ${ele.dataset.fontStyle == 'italic' ? 'checked' : ''} /><i>I</i></div>
-                <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="underline" ${ele.dataset.textDecoration == 'underline' ? 'checked' : ''} /><u>U</u></div>
-                <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="line-through" ${ele.dataset.textDecoration == 'line-through' ? 'checked' : ''} /><s>S</s></div>
-            </div>
-            <label>Text</label>
-            <input size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
+        <div class="text flex" style="--display: inline-flex; --gap: 0.5em; --justify: space-around;">
+            <label>Font&nbsp;family
+                <select onchange="changeProperty(this)">
+                    <option value="fontFamily" ${ele.dataset.fontFamily == 'Sans-Serif' ? 'selected' : ''}>Sans-Serif</option>
+                    <option value="fontFamily" ${ele.dataset.fontFamily == 'Serif' ? 'selected' : ''}>Serif</option>
+                    <option value="fontFamily" ${ele.dataset.fontFamily == 'Monospace' ? 'selected' : ''}>Monospace</option>
+                    <option value="fontFamily" ${ele.dataset.fontFamily == 'Cursive' ? 'selected' : ''}>Cursive</option>
+                </select>
+            </label>
+            <label>Font&nbsp;size
+                <input size="1" name="fontSize" value="${ele.dataset.fontSize ? ele.dataset.fontSize : '1em'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+            </label>
+            <label>Font&nbsp;style
+                <div class="flex" style="--display: inline-flex; --gap: 0.5em; --width: fit-content;">
+                    <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="fontWeight" value="bold" ${ele.dataset.fontWeight == 'bold' ? 'checked' : ''} /><b>B</b></div>
+                    <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="fontStyle" value="italic" ${ele.dataset.fontStyle == 'italic' ? 'checked' : ''} /><i>I</i></div>
+                    <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="underline" ${ele.dataset.textDecoration == 'underline' ? 'checked' : ''} /><u>U</u></div>
+                    <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="line-through" ${ele.dataset.textDecoration == 'line-through' ? 'checked' : ''} /><s>S</s></div>
+                </div>
+            </label>
+            <label>Text
+                <input size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
+            </label>
         </div>
-        <label class="image svg center-vertical" style="--display: flex;">
-            SVG<span class="switch">
+        <label class="image svg center-vertical" style="--display: flex;">SVG
+            <span class="switch">
                 <input type="checkbox" onclick="if (this.checked) { editing.dataset.name = 'Image' } else { editing.dataset.name = 'SVG' } refreshPreview()" ${ele.dataset.name == 'Image' ? 'checked' : ''} />
             </span>Image
         </label>
@@ -514,19 +518,21 @@ function showSettings(ele) {
              spellcheck="false"
              oninput="changeSVG(this, this.innerText != '' ? this.innerText : '<svg></svg>'); //restoreSelection(this);"
              onkeydown="//saveSelection(this)"></pre>
-        <div class="grid" style="--display: inline-grid; --gap: 0.5em; --rows: 2;">
-            <label>Background color</label>
-            <div name="backgroundColor"
-                 onmouseenter="colorPickerInstance.setParent(this)"
-                 onmouseleave="colorPickerInstance.style.display = 'none'; colorPickerInstance.setParent(document.body)">
-                <span class="nothing">Select color</span>
-            </div>
-            <label>Text color</label>
-            <div name="color"
-                 onmouseenter="colorPickerInstance.setParent(this)"
-                 onmouseleave="colorPickerInstance.style.display = 'none'; colorPickerInstance.setParent(document.body)">
-                <span class="nothing">Select color</span>
-            </div>
+        <div class="flex" style="--display: inline-flex; --gap: 0.5em; --justify: space-around;">
+            <label>Background color
+                <div name="backgroundColor"
+                    onclick="colorPickerInstance.setParent(this)"
+                    onmouseleave="//colorPickerInstance.setParent(document.body)">
+                    <span class="nothing">Select color</span>
+                </div>
+            </label>
+            <label>Text color
+                <div name="color"
+                    onclick="colorPickerInstance.setParent(this)"
+                    onmouseleave="//colorPickerInstance.setParent(document.body)">
+                    <span class="nothing">Select color</span>
+                </div>
+            </label>
         </div>
     `;
     formatXML(document.querySelector('#settings pre'), ele.querySelector('svg') ? ele.querySelector('svg').outerHTML : '<svg></svg>');
