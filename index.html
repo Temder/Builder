@@ -12,13 +12,13 @@
             --size: 10em;
             display: flex;
             position: fixed;
-            width: 100%;
+            width: 75%;
             height: 100%;
             top: 0;
             left: 0;
             padding: 2em;
+            margin: 0 auto;
             flex-wrap: wrap;
-            justify-content: center;
             align-content: start;
             gap: 0 calc(var(--size) / 10);
             background-color: var(--color-main-bg);
@@ -30,7 +30,7 @@
             border-radius: 100vh;
         }
         #overlay div:nth-child(2n + 1 of .wrapped) {
-            /*margin-left: calc(var(--size));*/
+            margin-left: calc(var(--size) / 2 + var(--size) / 20);
         }
     </style>
 </head>
