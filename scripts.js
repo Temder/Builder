@@ -393,7 +393,7 @@ function showSettings(ele) {
         </div>
         <details>
             <summary>Dimensions</summary>
-            <div class="flex">
+            <div class="flex" style="--justify: center; --gap: 5em;">
                 <div id="dimensions">
                     <input size="1" name="width" value="${ele.dataset.width ? ele.dataset.width : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                     <span>Width</span>
@@ -404,19 +404,19 @@ function showSettings(ele) {
                     <input size="1" name="margin" value="${ele.dataset.margin ? ele.dataset.margin : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
                     <span>Margin</span>
                 </div>
-                <div>
-                    <label>Minimal width</label>
-                    <input size="1" name="minWidth" value="${ele.dataset.minWidth ? ele.dataset.minWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                    <br>
-                    <label>Maximal width</label>
-                    <input size="1" name="maxWidth" value="${ele.dataset.maxWidth ? ele.dataset.maxWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                </div>
-                <div>
-                    <label>Minimal height</label>
-                    <input size="1" name="minHeight" value="${ele.dataset.minHeight ? ele.dataset.minHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
-                    <br>
-                    <label>Maximal height</label>
-                    <input size="1" name="maxHeight" value="${ele.dataset.maxHeight ? ele.dataset.maxHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                <div class="flex" style="--direction: column; --gap: 0.5em;">
+                    <label>Minimal width
+                        <input size="1" name="minWidth" value="${ele.dataset.minWidth ? ele.dataset.minWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    </label>
+                    <label>Maximal width
+                        <input size="1" name="maxWidth" value="${ele.dataset.maxWidth ? ele.dataset.maxWidth : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    </label>
+                    <label>Minimal height
+                        <input size="1" name="minHeight" value="${ele.dataset.minHeight ? ele.dataset.minHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    </label>
+                    <label>Maximal height
+                        <input size="1" name="maxHeight" value="${ele.dataset.maxHeight ? ele.dataset.maxHeight : 'auto'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    </label>
                 </div>
             </div>
         </details>
@@ -474,6 +474,20 @@ function showSettings(ele) {
                 </div>
             </div></label>
         </div>
+        <div class="flex" style="--gap: 0.5em;">
+            individual Border<input type="checkbox" name="borderIndividual" onchange="changeProperty(this)" ${ele.dataset.borderIndividual == 'on' ? 'checked' : ''} />
+            ${['', 'Top', 'Right', 'Bottom', 'Left'].map((side) => /*html*/`
+                <label class="checkShow">${side} Border
+                    <select onchange="changeProperty(this)">
+                        ${['none', 'solid', 'double', 'dashed', 'dotted', 'groove', 'ridge', 'inset', 'outset'].map((style) => /*html*/`
+                            <option value="border${side}Style" ${ele.dataset[`border${side}Style`] == style ? 'selected' : ''}>${style}</option>
+                        `).join('')}
+                    </select>
+                    <input size="1" name="border${side}Width" value="${ele.dataset[`border${side}Width`] ? ele.dataset[`border${side}Width`] : '0'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                    <input size="1" type="color" name="border${side}Color" value="${ele.dataset[`border${side}Color`] ? ele.dataset[`border${side}Color`] : 'none'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeProperty(this);">
+                </label>
+            `).join('')}
+        </div>
         <!--<label for="type" class="type">Viewing Type</label>
         <select name="type" class="type" onchange="changeType(this.value)">
             <option value="text" ${ele.dataset.type == 'text' ? 'selected' : ''}>Text</option>
@@ -482,6 +496,12 @@ function showSettings(ele) {
         <label class="type">Empty Text</label>
         <input class="type" size="1" value="${ele.dataset.empty != undefined ? ele.dataset.empty : 'no data'}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeEmpty(this.value);">-->
         <div class="text flex" style="--display: inline-flex; --gap: 0.5em; --justify: space-around;">
+            <label>Text
+                <input size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
+            </label>
+            <label>Link
+                <input size="1" name="href" placeholder="No link" value="${ele.href ? ele.href : ''}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeElementTag(editing, this.value ? 'a' : 'div', this);">
+            </label>
             <label>Font&nbsp;family
                 <select onchange="changeProperty(this)">
                     <option value="fontFamily" ${ele.dataset.fontFamily == 'Sans-Serif' ? 'selected' : ''}>Sans-Serif</option>
@@ -500,9 +520,6 @@ function showSettings(ele) {
                     <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="underline" ${ele.dataset.textDecoration == 'underline' ? 'checked' : ''} /><u>U</u></div>
                     <div class="togglebutton"><input type="checkbox" onclick="changeProperty(this)" name="textDecoration" value="line-through" ${ele.dataset.textDecoration == 'line-through' ? 'checked' : ''} /><s>S</s></div>
                 </div>
-            </label>
-            <label>Text
-                <input size="1" value="${ele.innerText}" oninput="this.size = this.value.length == 0 ? 1 : this.value.length; changeText(this.value != '' ? this.value : 'no text');">
             </label>
         </div>
         <label class="image svg center-vertical" style="--display: flex;">SVG
@@ -627,6 +644,21 @@ function changeSVG(self, svg) {
         child.style.pointerEvents = 'none';
         child.style.zIndex = '0';
     });
+    refreshPreview();
+}
+function changeElementTag(element, newTag, data = null) {
+    const newElement = document.createElement(newTag);
+    Array.from(element.attributes).forEach(function(attr) {
+        newElement.setAttribute(attr.nodeName, attr.nodeValue);
+    });
+    if (data) {
+        newElement.setAttribute(data.name, data.value);
+    }
+    while (element.firstChild) {
+        newElement.appendChild(element.firstChild);
+    }
+    element.parentNode.replaceChild(newElement, element);
+    editing = newElement;
     refreshPreview();
 }
 function checkIndentation(input, indentSize = 2) {
@@ -824,17 +856,6 @@ function removeAttributes(ele) {
     ele.removeAttribute('ondragover');
     ele.removeAttribute('ondrop');
 }
-function changeElementTag(element, newTag) {
-    const newElement = document.createElement(newTag);
-    Array.from(element.attributes).forEach(function(attr) {
-        newElement.setAttribute(attr.nodeName, attr.nodeValue);
-    });
-    while (element.firstChild) {
-        newElement.appendChild(element.firstChild);
-    }
-    element.parentNode.replaceChild(newElement, element);
-    return newElement;
-}
 function convertToDashStyle(str) {
     return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
@@ -997,6 +1018,7 @@ function refreshPreview() {
 }
 function refreshOutput() {
     let html = document.querySelector('#previewContainer').outerHTML;
+    html = html.replace(/id="\w*"\s|\sstyle=".*?"\s?|noselect\s/g, '');
     let strHTML = html.replace(/(\r\n|\n|\r)/gm, '').trim()
                       .replace(/(data-name="SVG".*)<img.*?>|(data-name="Image".*)<svg.*<\/svg>/g, '$1$2')
                       .replace(/<[^>]*?nothing.*?<\/\w+>|data-name="\w+" ?|data-color-knob-pos=".+?" ?/g, '')

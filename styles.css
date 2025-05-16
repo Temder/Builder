@@ -66,6 +66,18 @@
     --height: initial;
     --min-height: initial;
     --max-height: initial;
+    --border-top-style: initial;
+    --border-top-width: initial;
+    --border-top-color: initial;
+    --border-right-style: initial;
+    --border-right-width: initial;
+    --border-right-color: initial;
+    --border-bottom-style: initial;
+    --border-bottom-width: initial;
+    --border-bottom-color: initial;
+    --border-left-style: initial;
+    --border-left-width: initial;
+    --border-left-color: initial;
     --color-spacing: #389900;
     --color-padding: #90ee90bf;
     --color-margin: #ee9090bf;
@@ -129,6 +141,7 @@ select {
     color: var(--color-main-fg);
     border: solid 1px var(--color-main-border-1);
     border-radius: 0.5em;
+    text-align: center;
 }
 textarea {
     width: 100%;
@@ -324,6 +337,18 @@ textarea {
     grid-auto-flow: column;
     gap: var(--gap);
 }
+.checkShow {
+    display: none;
+}
+:nth-child(1 of .checkShow) {
+    display: block;
+}
+input:checked ~ .checkShow {
+    display: block;
+}
+input:checked ~ :nth-child(1 of .checkShow) {
+    display: none;
+}
 .nothing {
     position: absolute;
     width: 100%;
@@ -426,6 +451,11 @@ textarea {
     max-height: var(--max-height);
     padding: var(--padding);
     margin: var(--margin);
+    border-top: var(--border-top-style) var(--border-top-width, 1px) var(--border-top-color, var(--color-main-fg));
+    border-right: var(--border-right-style) var(--border-right-width) var(--border-right-color, var(--color-main-fg));
+    border-bottom: var(--border-bottom-style) var(--border-bottom-width) var(--border-bottom-color, var(--color-main-fg));
+    border-left: var(--border-left-style) var(--border-left-width) var(--border-left-color, var(--color-main-fg));
+    border: var(--border-style) var(--border-width) var(--border-color, var(--color-main-fg));
     font-family: var(--font-family);
     font-size: var(--font-size);
     font-weight: var(--font-weight);
@@ -832,8 +862,11 @@ textarea {
     background-color: var(--color-main-bg);
     color: var(--color-main-fg);
 }
+#settings input[name="href"] {
+    min-width: 5em;
+}
 #settings label {
-    display: block;
+    /*display: block;*/
 }
 #settings pre {
     padding: 1em;
